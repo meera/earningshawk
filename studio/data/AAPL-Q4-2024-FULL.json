@@ -1,0 +1,128 @@
+{
+  "company": "Apple Inc.",
+  "ticker": "AAPL",
+  "quarter": "Q4",
+  "fiscal_year": 2024,
+  "call_date": "2024-11-01",
+  "audio_url": "public/audio/AAPL-Q4-2024.m4a",
+  "duration_seconds": 3600,
+  "speakers": {
+    "tim-cook": {
+      "name": "Tim Cook",
+      "title": "CEO",
+      "image_url": "public/speakers/tim-cook.jpg"
+    },
+    "luca-maestri": {
+      "name": "Luca Maestri",
+      "title": "CFO",
+      "image_url": "public/speakers/luca-maestri.jpg"
+    },
+    "suhasini-chandramouli": {
+      "name": "Suhasini Chandramouli",
+      "title": "Director of Investor Relations",
+      "image_url": "public/speakers/suhasini-chandramouli.jpg"
+    }
+  },
+  "transcript": [
+    {
+      "speaker": "suhasini-chandramouli",
+      "text": "Thank you. Good day everyone and welcome to the Apple Q4 FY2024 Earnings Conference Call.",
+      "start_time": 0,
+      "end_time": 8
+    },
+    {
+      "speaker": "tim-cook",
+      "text": "Thank you Suhasini, and good afternoon everyone. Today Apple is reporting revenue of $94.9 billion, up 6 percent from a year ago, and a new September quarter record.",
+      "start_time": 8,
+      "end_time": 22,
+      "key_metrics": [
+        {
+          "type": "revenue",
+          "value": "$94.9B",
+          "direction": "up"
+        },
+        {
+          "type": "growth",
+          "value": "+6%",
+          "direction": "up"
+        }
+      ]
+    },
+    {
+      "speaker": "tim-cook",
+      "text": "iPhone revenue grew 6 percent to $46.2 billion, driven by strong customer response to iPhone 16 lineup.",
+      "start_time": 22,
+      "end_time": 32,
+      "key_metrics": [
+        {
+          "type": "revenue",
+          "value": "$46.2B",
+          "direction": "up"
+        }
+      ]
+    },
+    {
+      "speaker": "tim-cook",
+      "text": "Services revenue reached an all-time high of $25 billion, growing 12 percent year over year.",
+      "start_time": 32,
+      "end_time": 42,
+      "key_metrics": [
+        {
+          "type": "revenue",
+          "value": "$25B",
+          "direction": "up"
+        },
+        {
+          "type": "growth",
+          "value": "+12%",
+          "direction": "up"
+        }
+      ]
+    },
+    {
+      "speaker": "luca-maestri",
+      "text": "Earnings per share was $1.64, which represents a new September quarter record and beat analyst estimates.",
+      "start_time": 180,
+      "end_time": 190,
+      "key_metrics": [
+        {
+          "type": "eps",
+          "value": "$1.64",
+          "direction": "up"
+        }
+      ]
+    },
+    {
+      "speaker": "luca-maestri",
+      "text": "Our installed base of active devices reached a new all-time high, surpassing 2.2 billion devices.",
+      "start_time": 300,
+      "end_time": 310,
+      "key_metrics": [
+        {
+          "type": "guidance",
+          "value": "2.2B devices",
+          "direction": "up"
+        }
+      ]
+    }
+  ],
+  "financials": {
+    "revenue": {
+      "current": 94928000000,
+      "previous": 89498000000,
+      "yoy_growth": 6.1
+    },
+    "eps": {
+      "current": 1.64,
+      "estimate": 1.60,
+      "beat_miss": "beat"
+    }
+  },
+  "_notes": {
+    "audio_source": "Download from Apple Investor Relations or YouTube",
+    "transcript_source": "Use speaker diarization technology to identify speakers and timing",
+    "speaker_images": "Download from Apple executive bios or LinkedIn",
+    "duration": "Typical earnings call is 45-60 minutes",
+    "key_metrics": "Extract from transcript manually or use NLP to identify numbers mentioned"
+  }
+}

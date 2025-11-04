@@ -1,0 +1,71 @@
+{
+  "company": "Apple Inc.",
+  "ticker": "AAPL",
+  "quarter": "Q4",
+  "fiscal_year": 2024,
+  "call_date": "2024-11-01",
+  "financials": {
+    "revenue": {
+      "current": 94928000000,
+      "previous": 89498000000,
+      "yoy_growth": 6.1
+    },
+    "eps": {
+      "current": 1.64,
+      "estimate": 1.60,
+      "beat_miss": "beat"
+    },
+    "segments": [
+      {
+        "name": "iPhone",
+        "revenue": 46220000000
+      },
+      {
+        "name": "Services",
+        "revenue": 24973000000
+      },
+      {
+        "name": "Wearables",
+        "revenue": 9045000000
+      },
+      {
+        "name": "Mac",
+        "revenue": 7740000000
+      },
+      {
+        "name": "iPad",
+        "revenue": 6950000000
+      }
+    ],
+    "margins": {
+      "gross": 46.2,
+      "operating": 30.7,
+      "net": 23.9
+    }
+  },
+  "highlights": [
+    "Revenue up 6% to $94.9B, exceeding analyst expectations",
+    "iPhone revenue grew 6% to $46.2B driven by iPhone 16 demand",
+    "Services hit record $25.0B, up 12% year-over-year",
+    "Active installed base of devices exceeds 2.2 billion",
+    "Strong double-digit growth in emerging markets",
+    "Record September quarter for Mac with $7.7B revenue"
+  ],
+  "transcript_highlights": [
+    {
+      "speaker": "Tim Cook",
+      "text": "We're pleased to report revenue growth of 6 percent and a new all-time revenue record in Services during the September quarter.",
+      "timestamp": 0
+    },
+    {
+      "speaker": "Luca Maestri",
+      "text": "Revenue grew 6 percent year over year to $94.9 billion, better than we expected.",
+      "timestamp": 120
+    },
+    {
+      "speaker": "Tim Cook",
+      "text": "Our installed base of active devices reached an all-time high across all products and all geographic segments.",
+      "timestamp": 240
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+# Whisper transcription
+openai-whisper
+torch
+torchaudio
+
+# LLM processing
+openai>=1.0.0
+
+# Utilities
+python-dotenv

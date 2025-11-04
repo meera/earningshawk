@@ -1,0 +1,34 @@
+{
+  "name": "earninglens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Transform earnings calls into visually-enhanced YouTube videos",
+  "workspaces": [
+    "web",
+    "api",
+    "dashboard",
+    "studio",
+    "insights",
+    "shared/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "studio:preview": "npm run start --workspace=studio",
+    "studio:render": "npm run render --workspace=studio",
+    "studio:render:aapl": "npm run render:aapl --workspace=studio",
+    "upload:r2": "node scripts/upload-to-r2.js",
+    "seed:company": "node scripts/seed-company.js"
+  },
+  "devDependencies": {
+    "turbo": "^1.11.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

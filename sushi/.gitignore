@@ -1,0 +1,22 @@
+# Sushi working directories (don't commit video files)
+uploads/
+downloads/
+
+# Python virtual environment
+.venv-sushi/
+
+# Generated files
+*.mp4
+*.mp3
+*.m4a
+*.wav
+*.json
+*.srt
+*.vtt
+*.txt
+
+# Keep structure files
+!requirements.txt
+!README.md
+!*.py
+!*.sh
