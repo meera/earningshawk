@@ -13,6 +13,14 @@ set -e  # Exit on error
 # Directories
 SUSHI_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
+# Load environment variables from .env
+ENV_FILE="$SUSHI_DIR/config/.env"
+if [ -f "$ENV_FILE" ]; then
+    set -a  # Export all variables
+    source "$ENV_FILE"
+    set +a
+fi
+
 # Load storage configuration
 STORAGE_CONF="$SUSHI_DIR/config/storage.conf"
 if [ -f "$STORAGE_CONF" ]; then
@@ -103,7 +111,12 @@ if [ ! -f "$SOURCE_FILE" ]; then
 fi
 
 # Activate Python environment
-source "$SUSHI_DIR/.venv-sushi/bin/activate"
+if [ -f "$SUSHI_DIR/.venv/bin/activate" ]; then
+    source "$SUSHI_DIR/.venv/bin/activate"
+else
+    log_error "Python virtual environment not found. Run: ./sushi/setup-sushi.sh"
+    exit 1
+fi
 
 # Run transcription
 python3 "$SUSHI_DIR/transcribe.py" "$SOURCE_FILE"

@@ -1,5 +1,6 @@
 # Python virtual environment
-.venv-sushi/
+.venv/
+.venv-sushi/  # Legacy, can be removed after migration
 
 # Large video/audio files (upload to R2, don't commit)
 videos/*/input/source.mp4

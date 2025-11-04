@@ -6,23 +6,37 @@ Complete earnings video production pipeline on GPU machine.
 
 ```bash
 # 1. Clone repo and pull latest
+cd ~/earninglens
 git pull
 
-# 2. Setup Python environment
-cd sushi
-./setup-sushi.sh
+# 2. Setup Python environment (creates .venv and loads .env)
+cd ~/earninglens
+./sushi/setup-sushi.sh
 
-# 3. Setup Node.js & Remotion
-./setup-node.sh
+# This will:
+# - Create .venv Python virtual environment
+# - Install dependencies from requirements.txt
+# - Create config/.env from .env.example (if needed)
+# - Download Whisper models (optional)
 
-# 4. Configure credentials
-cp config/.env.example config/.env
-nano config/.env
+# 3. Edit .env file with your API keys
+nano sushi/config/.env
 
-# Add:
-# - OPENAI_API_KEY
-# - YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN
-# - DATABASE_URL
+# Required variables:
+# - OPENAI_API_KEY           (for LLM insights)
+# - YOUTUBE_CLIENT_ID        (for YouTube upload)
+# - YOUTUBE_CLIENT_SECRET
+# - YOUTUBE_REFRESH_TOKEN
+# - DATABASE_URL             (for saving video metadata)
+
+# 4. Setup Node.js & Remotion
+./sushi/setup-node.sh
+
+# 5. Load environment variables (in current session)
+source sushi/load-env.sh
+
+# 6. Activate Python environment
+source .venv/bin/activate
 ```
 
 ## Process a Single Video
@@ -213,7 +227,35 @@ node scripts/render-video.js pltr-q3-2024
 
 ## Environment Variables
 
-See `config/.env.example` for required credentials.
+All environment variables are stored in `config/.env` and loaded automatically by scripts.
+
+**Setup:**
+```bash
+# Copy example file
+cp config/.env.example config/.env
+
+# Edit with your credentials
+nano config/.env
+
+# Load in current shell session
+source sushi/load-env.sh
+
+# Or load automatically in scripts (already handled)
+```
+
+**Required Variables:**
+```bash
+OPENAI_API_KEY=sk-...                      # OpenAI API for LLM insights
+YOUTUBE_CLIENT_ID=...                      # YouTube Data API v3
+YOUTUBE_CLIENT_SECRET=...
+YOUTUBE_REFRESH_TOKEN=...
+DATABASE_URL=postgresql://...              # Neon PostgreSQL
+R2_ACCOUNT_ID=...                          # Cloudflare R2 (optional)
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+```
+
+**Note:** Scripts automatically load `.env` file. You don't need to export variables manually.
 
 ## Next Steps
 

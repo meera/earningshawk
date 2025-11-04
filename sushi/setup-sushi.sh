@@ -48,11 +48,11 @@ echo "✅ Python 3 found"
 # Create virtual environment
 echo ""
 echo "Creating Python virtual environment..."
-python3 -m venv .venv-sushi
-echo "✅ Virtual environment created: .venv-sushi"
+python3 -m venv .venv
+echo "✅ Virtual environment created: .venv"
 
 # Activate venv
-source .venv-sushi/bin/activate
+source .venv/bin/activate
 
 # Upgrade pip
 echo ""
@@ -72,23 +72,44 @@ mkdir -p sushi/uploads
 mkdir -p sushi/downloads
 echo "✅ Directories created"
 
-# Check for OpenAI API key
+# Setup environment file
 echo ""
-echo "Checking for OpenAI API key..."
-if [ -z "$OPENAI_API_KEY" ]; then
-    echo "⚠️  OPENAI_API_KEY not set"
-    echo ""
-    echo "To set it permanently, add to ~/.bashrc:"
-    echo "  export OPENAI_API_KEY='your-api-key-here'"
-    echo ""
-    read -p "Enter your OpenAI API key now (or press Enter to skip): " api_key
-    if [ -n "$api_key" ]; then
-        export OPENAI_API_KEY="$api_key"
-        echo "export OPENAI_API_KEY='$api_key'" >> ~/.bashrc
-        echo "✅ API key set and added to ~/.bashrc"
+echo "Setting up environment configuration..."
+ENV_FILE="sushi/config/.env"
+ENV_EXAMPLE="sushi/config/.env.example"
+
+if [ ! -f "$ENV_FILE" ]; then
+    echo "⚠️  .env file not found"
+    if [ -f "$ENV_EXAMPLE" ]; then
+        read -p "Create .env from .env.example? (y/n) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            cp "$ENV_EXAMPLE" "$ENV_FILE"
+            echo "✅ Created $ENV_FILE"
+            echo ""
+            echo "⚠️  Important: Edit $ENV_FILE and add your API keys:"
+            echo "  - OPENAI_API_KEY"
+            echo "  - YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN"
+            echo "  - DATABASE_URL"
+            echo ""
+        fi
     fi
 else
-    echo "✅ OPENAI_API_KEY is set"
+    echo "✅ .env file found"
+
+    # Load environment variables from .env
+    set -a  # Export all variables
+    source "$ENV_FILE"
+    set +a
+
+    echo "✅ Environment variables loaded from $ENV_FILE"
+
+    # Verify required keys
+    if [ -z "$OPENAI_API_KEY" ]; then
+        echo "⚠️  OPENAI_API_KEY not set in .env file"
+    else
+        echo "✅ OPENAI_API_KEY is set"
+    fi
 fi
 
 # Download Whisper models (optional but recommended)
@@ -107,8 +128,11 @@ echo "✅ Setup Complete!"
 echo "=========================================="
 echo ""
 echo "Next steps:"
-echo "1. Activate the environment: source .venv-sushi/bin/activate"
-echo "2. Process a video: python sushi/process_video.py sushi/uploads/video.mp4"
+echo "1. Edit config: nano sushi/config/.env (add API keys)"
+echo "2. Activate the environment: source .venv/bin/activate"
+echo "3. Process a video: ./scripts/process-earnings.sh <video-id> youtube <url>"
 echo ""
-echo "Or use the Mac wrapper scripts to upload/download via scp"
+echo "Example:"
+echo "  source .venv/bin/activate"
+echo "  ./scripts/process-earnings.sh pltr-q3-2024 youtube https://youtube.com/watch?v=..."
 echo "=========================================="
