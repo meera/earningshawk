@@ -8,3 +8,6 @@ openai>=1.0.0
 
 # Utilities
 python-dotenv
+
+# Image generation
+Pillow>=10.0.0

@@ -5,6 +5,7 @@ Complete video processing pipeline for EarningLens on sushi GPU machine
 Runs:
 1. Whisper transcription (GPU accelerated)
 2. LLM insights extraction (OpenAI API)
+3. YouTube thumbnail generation
 
 Usage:
     python sushi/process_video.py <video_file>
@@ -26,6 +27,7 @@ import logging
 # Import local modules
 from transcribe import transcribe_file
 from insights_generator import extract_insights_from_paragraphs
+from generate_thumbnail import generate_thumbnail
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -34,17 +36,20 @@ logger = logging.getLogger(__name__)
 def process_video_complete(
     filepath: str,
     whisper_model: str = "medium",
-    llm_model: str = "gpt-4o-mini"
+    llm_model: str = "gpt-4o-mini",
+    video_data_path: str = None
 ) -> bool:
     """
     Complete processing pipeline:
     1. Transcribe with Whisper
     2. Extract insights with LLM
+    3. Generate YouTube thumbnail
 
     Args:
         filepath: Path to video/audio file
         whisper_model: Whisper model name (tiny, base, small, medium, large)
         llm_model: OpenAI model name (gpt-4o-mini, gpt-4o, etc.)
+        video_data_path: Optional path to JSON file with video metadata (for thumbnail)
 
     Returns:
         bool: Success status
@@ -118,6 +123,31 @@ def process_video_complete(
     logger.info(f"✅ Insights extraction completed in {llm_duration:.1f}s")
     logger.info(f"📄 Insights saved to: {insights_path}")
 
+    # Step 3: Generate YouTube Thumbnail (if video data provided)
+    if video_data_path and os.path.exists(video_data_path):
+        logger.info("\n🎨 STEP 3: YouTube Thumbnail Generation")
+        logger.info("-" * 60)
+
+        thumbnail_start = time.time()
+
+        # Load video metadata
+        with open(video_data_path, 'r', encoding='utf-8') as f:
+            video_data = json.load(f)
+
+        # Generate thumbnail path
+        thumbnail_path = os.path.join(output_dir, f"{base_filename}.thumbnail.jpg")
+
+        # Generate thumbnail
+        thumbnail_success = generate_thumbnail(video_data, thumbnail_path)
+
+        thumbnail_duration = time.time() - thumbnail_start
+
+        if thumbnail_success:
+            logger.info(f"✅ Thumbnail generated in {thumbnail_duration:.1f}s")
+            logger.info(f"🖼️  Thumbnail saved to: {thumbnail_path}")
+        else:
+            logger.warning("⚠️  Thumbnail generation failed")
+
     # Print summary
     logger.info("\n" + "="*60)
     logger.info("PROCESSING COMPLETE")
@@ -153,7 +183,7 @@ def process_video_complete(
 
     # List all generated files
     logger.info(f"\n📁 Generated Files:")
-    for ext in ['.json', '.srt', '.vtt', '.txt', '.paragraphs.json', '.insights.json']:
+    for ext in ['.json', '.srt', '.vtt', '.txt', '.paragraphs.json', '.insights.json', '.thumbnail.jpg']:
         file_path = os.path.join(output_dir, f"{base_filename}{ext}")
         if os.path.exists(file_path):
             file_size = os.path.getsize(file_path) / 1024  # KB
@@ -165,14 +195,17 @@ def process_video_complete(
 def main():
     """Main entry point"""
     if len(sys.argv) < 2:
-        print("Usage: python sushi/process_video.py <video_file> [whisper_model] [llm_model]")
+        print("Usage: python sushi/process_video.py <video_file> [whisper_model] [llm_model] [video_data_json]")
         print("\nExamples:")
         print("  python sushi/process_video.py uploads/video.mp4")
         print("  python sushi/process_video.py uploads/video.mp4 medium gpt-4o-mini")
+        print("  python sushi/process_video.py uploads/video.mp4 medium gpt-4o-mini ../studio/data/AAPL-Q4-2024.json")
         print("\nWhisper Models: tiny, base, small, medium, large")
         print("LLM Models: gpt-4o-mini, gpt-4o, gpt-4-turbo")
         print("\nEnvironment Variables:")
         print("  OPENAI_API_KEY - Required for LLM insights")
+        print("\nOptional:")
+        print("  video_data_json - Path to JSON file with video metadata (company, quarter, etc.) for thumbnail generation")
         sys.exit(1)
 
     # Check for OpenAI API key
@@ -184,8 +217,9 @@ def main():
     filepath = sys.argv[1]
     whisper_model = sys.argv[2] if len(sys.argv) > 2 else "medium"
     llm_model = sys.argv[3] if len(sys.argv) > 3 else "gpt-4o-mini"
+    video_data_path = sys.argv[4] if len(sys.argv) > 4 else None
 
-    success = process_video_complete(filepath, whisper_model, llm_model)
+    success = process_video_complete(filepath, whisper_model, llm_model, video_data_path)
 
     sys.exit(0 if success else 1)
 
