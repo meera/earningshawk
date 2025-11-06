@@ -89,6 +89,10 @@ class Logger:
         print(f"{Colors.RED}✗ {msg}{Colors.NC}")
 
     @staticmethod
+    def warning(msg: str):
+        print(f"{Colors.YELLOW}⚠ {msg}{Colors.NC}")
+
+    @staticmethod
     def step(msg: str):
         print(f"\n{Colors.YELLOW}==>{Colors.NC} {msg}")
 
