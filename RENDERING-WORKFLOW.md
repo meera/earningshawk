@@ -251,6 +251,47 @@ rclone copy /var/earninglens/PLTR/Q3-2025/take1.mp4 \
 
 ---
 
+## Production Workflow (Render on sushi, Upload on Mac)
+
+**Best Practice:** Render on GPU machine (sushi) for speed, upload from Mac with YouTube credentials.
+
+### Step 1: Render on sushi (GPU machine)
+
+```bash
+# SSH to sushi
+ssh sushi
+
+# Navigate to project
+cd ~/earninglens/studio
+
+# Render video (5-10 minutes with GPU)
+npx remotion render src/index.ts PLTR-Q3-2025 \
+  /var/earninglens/PLTR/Q3-2025/take1.mp4
+
+# Verify output
+ls -lh /var/earninglens/PLTR/Q3-2025/take1.mp4
+```
+
+### Step 2: Upload on Mac (with YouTube OAuth)
+
+```bash
+# On Mac (where YouTube credentials are stored)
+cd ~/earninglens
+source .venv/bin/activate
+
+# Upload to YouTube with insights metadata
+python lens/scripts/upload_youtube.py \
+  /var/earninglens/PLTR/Q3-2025/take1.mp4 \
+  /var/earninglens/PLTR/Q3-2025/insights.json
+```
+
+**Why this workflow:**
+- Sushi has GPU → 5-10 min render time (vs 20-30 min on Mac CPU)
+- Mac has YouTube OAuth token saved → no re-authentication needed
+- Shared `/var/earninglens/` directory accessible from both machines
+
+---
+
 ## Next Steps
 
 After rendering:

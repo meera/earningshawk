@@ -175,16 +175,27 @@ Extract comprehensive metadata, insights, and YouTube-ready content from this ea
 - summary: Detailed 3-4 sentence summary of key points
 - quarter, year, company, ticker: Extract from content
 
-## 2. CHAPTERS (5-10 major sections)
+## 2. CHAPTERS (7-12 major sections)
 Create chapter markers for YouTube timestamps:
 - timestamp: When section begins (seconds)
 - title: Concise 3-7 word title (e.g., "Q4 Revenue Performance", "Product Updates", "Q&A Session")
 - description: Optional 1-sentence summary
 
+**CRITICAL: Distribute chapters EVENLY throughout the entire call duration**
+- Calculate total duration from last segment timestamp
+- Divide duration into roughly equal intervals (5-8 minutes each)
+- For a 44-minute call (~2640s), aim for chapters at: 0s, 300s, 600s, 900s, 1200s, 1500s, 1800s, 2100s, 2400s
+- DO NOT cluster chapters in the first 10 minutes
+- Q&A section should have multiple chapters if longer than 15 minutes (e.g., "Q&A Part 1", "Q&A Part 2", "Q&A Part 3")
+- Each chapter should represent meaningful content at that timestamp
+
 Examples:
 - {{timestamp: 0, title: "Opening Remarks", description: "CEO welcomes participants"}}
-- {{timestamp: 180, title: "Q4 Financial Results", description: "Revenue and EPS overview"}}
-- {{timestamp: 540, title: "Product Highlights", description: "New product launches and updates"}}
+- {{timestamp: 300, title: "Q4 Financial Results", description: "Revenue and EPS overview"}}
+- {{timestamp: 600, title: "Product Highlights", description: "New product launches and updates"}}
+- {{timestamp: 900, title: "Strategic Initiatives", description: "Future roadmap discussion"}}
+- {{timestamp: 1200, title: "Q&A Session - Part 1", description: "Analyst questions on financials"}}
+- {{timestamp: 1800, title: "Q&A Session - Part 2", description: "Questions on operations and strategy"}}
 
 ## 3. SPEAKERS
 Identify all speakers (usually CEO, CFO, analysts):
@@ -223,7 +234,7 @@ Extract financial and operational metrics:
 - Extract ONLY what is explicitly stated
 - Use null for undeterminable fields
 - Keep highlights concise but informative
-- Chapters should cover the entire call duration
+- Chapters MUST be distributed evenly throughout the entire call duration (not clustered at start)
 
 # TRANSCRIPT (JSON format with segments)
 
@@ -235,7 +246,7 @@ Extract all information and return as a single JSON object matching the schema.
 """
 
 
-def call_openai(prompt: str, model: str = "gpt-4o-mini") -> Optional[Dict[str, Any]]:
+def call_openai(prompt: str, model: str = "gpt-4o") -> Optional[Dict[str, Any]]:
     """Call OpenAI API for insights extraction."""
 
     if not OpenAI:
@@ -312,7 +323,10 @@ def generate_youtube_description(insights: Dict[str, Any]) -> str:
     desc += "\n"
 
     # Footer
-    desc += f"📊 Full interactive analysis: https://earninglens.com/{metadata['ticker'].lower()}/{metadata['quarter'].lower()}-{metadata['year']}\n\n"
+    ticker = metadata.get('ticker', 'unknown').lower() if metadata.get('ticker') else 'unknown'
+    quarter = metadata.get('quarter', 'q1').lower() if metadata.get('quarter') else 'q1'
+    year = metadata.get('year', 2025)
+    desc += f"📊 Full interactive analysis: https://earninglens.com/{ticker}/{quarter}-{year}\n\n"
     desc += "Subscribe for more earnings call visualizations!\n\n"
 
     # Hashtags

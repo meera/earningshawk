@@ -3,6 +3,7 @@ import {Composition, Folder} from 'remotion';
 import {EarningsVideo} from './compositions/EarningsVideo';
 import {EarningsCallVideo} from './compositions/EarningsVideoFull';
 import {PLTR_Q3_2025} from './compositions/PLTR_Q3_2025';
+import {PLTR_Q3_2025_take2} from './compositions/PLTR_Q3_2025-take2';
 import {
 	SubscribeExample,
 	OutroExample,
@@ -34,6 +35,14 @@ export const RemotionRoot: React.FC = () => {
 						id="PLTR-Q3-2025"
 						component={PLTR_Q3_2025}
 						durationInFrames={79000} // ~44 min at 30fps (adjust after insights)
+						fps={30}
+						width={1920}
+						height={1080}
+					/>
+					<Composition
+						id="PLTR-Q3-2025-take2"
+						component={PLTR_Q3_2025_take2}
+						durationInFrames={79000} // ~44 min at 30fps
 						fps={30}
 						width={1920}
 						height={1080}
