@@ -824,9 +824,9 @@ YOUTUBE_REFRESH_TOKEN="..."
 
 # Cloudflare R2
 R2_ACCOUNT_ID="..."
-R2_ACCESS_KEY_ID="c3e3e519381670b6a8aaf415b5e3f40b"
-R2_SECRET_ACCESS_KEY="ea91dcedd2cfc80357e4546e3f51037fe3f0686fadda9d9a09d95d34bca14222"
-R2_BUCKET_NAME="earninglens"
+R2_ACCESS_KEY_ID="..."
+R2_SECRET_ACCESS_KEY="..."
+R2_BUCKET_NAME="your-bucket-name"
 R2_PUBLIC_URL="https://pub-{hash}.r2.dev"
 
 # Rapid API (YouTube Download)

@@ -15,12 +15,17 @@ import sys
 import json
 import requests
 from typing import Optional
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class YouTubeVideoDownloader:
-    def __init__(self, api_key: str = "3f1bb5e065msh90a5e46cb63b48ap1df86fjsnf05311ceb523"):
+    def __init__(self, api_key: str = None):
         """Initialize YouTube downloader with RapidAPI credentials"""
-        self.api_key = api_key
+        self.api_key = api_key or os.getenv("RAPID_API_KEY")
+        if not self.api_key:
+            raise ValueError("RAPID_API_KEY not found in environment")
         self.base_url = "https://youtube-media-downloader.p.rapidapi.com/v2/video/details"
         self.headers = {
             'x-rapidapi-host': 'youtube-media-downloader.p.rapidapi.com',
