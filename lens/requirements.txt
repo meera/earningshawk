@@ -14,3 +14,6 @@ google-auth-httplib2
 # Utilities
 python-dotenv
 requests
+
+# Image generation
+Pillow>=10.0.0
