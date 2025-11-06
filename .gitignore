@@ -81,3 +81,10 @@ lens/downloads/
 # Logs
 *.log
 .env.prod
+
+# Data files
+*.csv
+stripe_products.csv
+
+# Build artifacts
+*.tsbuildinfo

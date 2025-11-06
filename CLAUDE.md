@@ -60,8 +60,7 @@ We don't compete on data (available everywhere). We compete on **presentation an
 6. **Scale Through Automation**
    - Build once, run 1000+ times
    - Every company, every quarter
-   - Automated pipeline: Download → Transcribe → Render → Upload
-   - Manual intervention only for quality control
+   - Mostly automated pipeline: Download → Transcribe → First AI Version -> Manual Creative Tweak + AI assisted Manual Validation → Render  → Upload
    - Goal: 10 videos per week → 50 videos per week → 500+ videos per quarter
 
 ### The Three Pillars of Truth
@@ -138,7 +137,7 @@ These are the ONLY sources we trust absolutely. Everything else is supplementary
 
 ---
 
-**Vision:** "Show, don't tell" - Data-driven earnings content with minimal text, maximum engagement.
+**Vision:** "Show, don't tell" - Data-driven earnings content, text, maximum engagement.
 
 **Monetization:**
 1. YouTube ad revenue (1000+ subs, 4000+ watch hours)
@@ -246,6 +245,185 @@ These are the ONLY sources we trust absolutely. Everything else is supplementary
 - **CDN:** Cloudflare (R2 + caching)
 - **Monitoring:** Custom admin dashboard
 - **Email:** Resend or SendGrid (transactional)
+
+### **Development Machines (CRITICAL)**
+
+**Two-machine setup for video production:**
+
+1. **Sushi (Linux GPU machine)** - Heavy processing
+   - GPU-accelerated transcription (Whisper)
+   - GPU-accelerated rendering (Remotion)
+   - Fast processing (20-30 min per video)
+
+2. **Mac Laptop** - Development & editing
+   - Composition editing (React/TypeScript)
+   - Remotion Studio preview
+   - Git commits
+   - YouTube uploads
+
+**Shared Directory (CRITICAL):**
+```
+/var/earninglens/  ← Shared between sushi and Mac
+```
+
+This directory is **accessible from both machines**:
+- **On sushi:** `/var/earninglens/`
+- **On Mac:** `/var/earninglens/` (network mounted - `/Volumes/earninglens-1/`)
+
+**Structure:**
+```
+/var/earninglens/
+├── _downloads/                    # Processing directory (by YouTube video ID)
+│   └── {youtube_video_id}/        # e.g., jUnV3LiN0_k
+│       ├── .state.json            # Processing state tracker
+│       ├── source.mp4             # Original download
+│       ├── source.trimmed.mp4     # Silence removed
+│       ├── metadata.json          # YouTube metadata
+│       ├── transcript.json        # Full Whisper transcript
+│       ├── transcript.paragraphs.json  # Optimized (for GPT)
+│       ├── transcript.srt         # Subtitle format
+│       ├── transcript.vtt         # WebVTT format
+│       ├── transcript.txt         # Plain text
+│       └── transcript.tsv         # Timestamps
+│
+├── PLTR/                          # Final outputs (by company/quarter)
+│   └── Q3-2025/
+│       ├── metadata.json          # Company/video metadata
+│       ├── insights.json          # GPT-4o extracted insights
+│       ├── take1.mp4              # First render
+│       ├── take2.mp4              # Second render (after fixes)
+│       ├── input/                 # (empty - reserved)
+│       └── transcripts/           # (empty - reserved)
+│
+├── HOOD/
+│   └── Q3-2025/
+├── AAPL/
+│   └── Q4-2024/
+└── [TICKER]/
+    └── [QUARTER]/
+```
+
+**Processing State Tracking:**
+
+Each video has a `.state.json` file in `_downloads/{youtube_video_id}/` that tracks:
+```json
+{
+  "video_id": "jUnV3LiN0_k",
+  "started_at": "2025-11-05T19:23:12.214552",
+  "steps": {
+    "download": {"status": "completed", "timestamp": "..."},
+    "parse": {"status": "completed", "data": {"ticker": "PLTR", "quarter": "Q3-2025"}},
+    "remove_silence": {"status": "completed"},
+    "transcribe": {"status": "completed"},
+    "insights": {"status": "completed"}
+  },
+  "last_updated": "2025-11-06T00:07:38.563300"
+}
+```
+
+This allows resuming failed processing from the last successful step.
+
+**Workflow Benefits:**
+- ✅ Process on sushi (GPU)
+- ✅ Files instantly available on Mac
+- ✅ Edit compositions on Mac
+- ✅ Render on sushi (GPU)
+- ✅ **Only commit code changes to git** (not video files)
+- ✅ Clean git history (no large files)
+
+**Key Principle:**
+- Video files, transcripts, audio → `/var/earninglens/` (shared, NOT in git)
+- Code, compositions, components → `~/earninglens/` (git repo, committed)
+
+---
+
+## Project Structure (Monorepo)
+
+**Repository:** `~/earninglens/`
+
+```
+earninglens/
+├── studio/                        # Remotion video compositions
+│   ├── src/
+│   │   ├── compositions/          # Video templates (PLTR_Q3_2025.tsx, etc.)
+│   │   ├── components/            # Reusable components (SubscribeLowerThird, etc.)
+│   │   ├── themes/                # Company brand themes (robinhood.ts, palantir.ts)
+│   │   └── Root.tsx               # Composition registry
+│   ├── public/
+│   │   └── audio/                 # Audio files for local preview (symlinks)
+│   ├── package.json
+│   └── remotion.config.ts
+│
+├── web/                           # Next.js public website (earninglens.com)
+│   ├── app/                       # Next.js App Router
+│   │   ├── (auth)/                # Auth pages
+│   │   ├── (public)/              # Landing, video pages
+│   │   ├── (dashboard)/           # User dashboard
+│   │   └── api/                   # API routes
+│   ├── components/                # React components
+│   ├── lib/                       # Utilities (db, auth, youtube, r2)
+│   └── package.json
+│
+├── dashboard/                     # Admin dashboard (separate Next.js app)
+│   ├── app/
+│   │   ├── page.tsx               # Main admin view (mobile-first)
+│   │   ├── videos/                # Video management
+│   │   └── analytics/             # Deep analytics
+│   ├── components/
+│   │   ├── StatsCard.tsx
+│   │   ├── VideoTable.tsx
+│   │   └── RealtimeChart.tsx
+│   └── package.json
+│
+├── lens/                          # Python video processing pipeline
+│   ├── process_earnings.py       # Main pipeline script
+│   ├── transcribe.py              # Whisper transcription
+│   ├── extract_insights.py        # GPT-4o insights extraction
+│   ├── scripts/
+│   │   ├── download-youtube.py    # YouTube downloader
+│   │   └── upload_youtube.py      # YouTube uploader
+│   └── requirements.txt
+│
+├── api/                           # Backend API (if separate from web)
+│   └── (reserved for future use)
+│
+├── marketing/                     # Marketing assets
+│   ├── landing-pages/
+│   ├── email-templates/
+│   └── assets/
+│
+├── shared/                        # Shared utilities across packages
+│   └── types/                     # TypeScript types
+│
+├── scripts/                       # Utility scripts
+│   ├── mount-sushi.sh             # Mount sushi directory (if needed)
+│   ├── batch-render.sh            # GPU batch rendering
+│   └── seed-database.ts           # Database seeding
+│
+├── public/                        # Global public assets
+│   └── logos/                     # Company logos
+│
+├── .env.local                     # Local environment variables
+├── .env.prod                      # Production environment variables
+├── package.json                   # Root package.json (workspace)
+├── turbo.json                     # Turborepo config (if using)
+├── CLAUDE.md                      # This file
+├── WORKFLOW.md                    # Video production workflow
+└── PRD.md                         # Product requirements
+```
+
+**Workspace Management:**
+- **Root `package.json`** manages workspaces for studio, web, dashboard
+- Shared dependencies installed at root level
+- Each package has its own `package.json` for specific dependencies
+
+**Key Directories:**
+- `studio/` - Video generation (Remotion)
+- `web/` - Public website (Next.js)
+- `dashboard/` - Admin interface (Next.js)
+- `lens/` - Processing pipeline (Python)
+- `marketing/` - Marketing materials
+- `shared/` - Shared code/types
 
 ---
 
@@ -635,51 +813,66 @@ npm run render:aapl &
 
 ### Bucket: `earninglens` (Separate from VideotoBe)
 
-**Structure:** Collocated by company ticker
+**Structure:** Flat structure - all files for a quarter in one directory
 
 ```
 r2:earninglens/
-├── AAPL/                           # Apple Inc.
-│   ├── videos/
-│   │   ├── 2024-Q4-full.mp4
-│   │   ├── 2024-Q4-preview.mp4     # 30s teaser
-│   │   └── 2024-Q3-full.mp4
-│   ├── audio/
-│   │   ├── 2024-Q4-full-call.m4a
-│   │   └── 2024-Q4-ceo-remarks.m4a
-│   ├── transcripts/
-│   │   ├── 2024-Q4.json            # With timestamps
-│   │   └── 2024-Q4.vtt             # Video captions
-│   ├── thumbnails/
-│   │   └── 2024-Q4.jpg
-│   └── reports/
-│       ├── 2024-Q4-10Q.pdf
-│       └── 2024-Q4-earnings-release.pdf
+├── AAPL/
+│   ├── 2024-Q4/                    # All Q4 2024 files in one directory
+│   │   ├── take1.mp4               # First render
+│   │   ├── take2.mp4               # Second render (corrections)
+│   │   ├── preview.mp4             # 30s teaser/YouTube Short
+│   │   ├── audio.m4a               # Full earnings call audio
+│   │   ├── transcript.json         # Full transcript with timestamps
+│   │   ├── transcript.vtt          # Video captions (WebVTT)
+│   │   ├── transcript.srt          # Subtitles (SRT)
+│   │   ├── insights.json           # GPT-4o extracted insights
+│   │   ├── metadata.json           # YouTube/company metadata
+│   │   ├── thumbnail.jpg           # Video thumbnail
+│   │   ├── 10Q.pdf                 # SEC filing
+│   │   └── earnings-release.pdf   # Press release
+│   └── 2024-Q3/
+│       └── ...
+│
+├── PLTR/
+│   └── Q3-2025/
+│       ├── take1.mp4
+│       ├── take2.mp4
+│       ├── insights.json
+│       └── ...
+│
 ├── MSFT/
-├── GOOGL/
-└── shared/
+│   └── 2024-Q4/
+│
+└── shared/                         # Shared assets across all companies
     └── logos/
         ├── AAPL.png
+        ├── PLTR.png
         └── MSFT.png
 ```
 
 **Key Principles:**
-- ✅ Collocate by company (all AAPL assets under `AAPL/`)
-- ✅ Easy to find/backup per company
-- ✅ Store media files only (videos, audio, transcripts, reports)
+- ✅ **Flat structure** - All files for a quarter in ONE directory (no nested subdirs)
+- ✅ Matches local `/var/earninglens/` structure
+- ✅ Easy to backup entire quarter
+- ✅ Simple to list/manage files
+- ✅ Multiple render versions (take1, take2, take3...)
 - ❌ NO chart images (charts rendered from database data)
 
 ### rclone Configuration
 
 ```bash
-# Upload video
-rclone copy local/AAPL-Q4-2024.mp4 earninglens:AAPL/videos/2024-Q4-full.mp4 -P
+# Upload entire quarter directory
+rclone copy /var/earninglens/AAPL/2024-Q4/ r2-public:earninglens/AAPL/2024-Q4/ -P
 
-# Upload transcript
-rclone copy local/transcript.json earninglens:AAPL/transcripts/2024-Q4.json -P
+# Upload single file
+rclone copy /var/earninglens/PLTR/Q3-2025/take2.mp4 r2-public:earninglens/PLTR/Q3-2025/take2.mp4 -P
 
-# List company assets
-rclone ls earninglens:AAPL/
+# List quarter files
+rclone ls r2-public:earninglens/PLTR/Q3-2025/
+
+# List all companies
+rclone lsd r2-public:earninglens/
 ```
 
 ---
@@ -1842,3 +2035,6 @@ See `PRD.md` for detailed phase-by-phase roadmap.
 **Status:** Ready for Development
 - use postgresql drizzle orm - avoid using neon related packages.
 - To download youtube video source .venv/bin/activate & python scripts/download-youtube.py <video-id>
+- content on web site should be SEO optimized - Display headline, intro paragraph, meta description
+Show enough content for SEO indexing
+Add sign-in some point in time to encourage user- sign. Blurr some part of webpage.

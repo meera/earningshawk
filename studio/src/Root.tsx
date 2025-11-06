@@ -14,6 +14,8 @@ import {
 	CompleteEndCardExample,
 	FullDemo,
 } from './compositions/Examples/AnimatedAssets';
+import { SubscribeExample as SubscribeLowerThirdExample } from './compositions/Examples/SubscribeExample';
+import { ThemeExample } from './compositions/ThemeExample';
 
 /**
  * Root composition with three sections:
@@ -51,6 +53,22 @@ export const RemotionRoot: React.FC = () => {
 			</Folder>
 
 			<Folder name="Animated-Components">
+				<Composition
+					id="ThemeExample"
+					component={ThemeExample}
+					durationInFrames={600}
+					fps={30}
+					width={1920}
+					height={1080}
+				/>
+				<Composition
+					id="SubscribeLowerThirdExample"
+					component={SubscribeLowerThirdExample}
+					durationInFrames={500}
+					fps={30}
+					width={1920}
+					height={1080}
+				/>
 				<Composition
 					id="SubscribeExample"
 					component={SubscribeExample}
