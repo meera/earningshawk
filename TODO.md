@@ -33,6 +33,7 @@ Make sure transcript.paragraphs.json is used to send to LLM.
 ## Future Enhancements
 - [ ] Fix SimpleBanner to use TailwindCSS instead of inline styles (currently using inline styles as workaround)
 - [ ] Update all render commands to work from root directory (currently requires cd studio/)
+- [ ] Fix rendering to work with symbolic links in public/audio/ (currently fails with 404 on Mac, may work on sushi)
 - [ ] Fix context length issue for insights
 - [ ] Add transcript subtitles overlay
 - [ ] Add charts and visualizations

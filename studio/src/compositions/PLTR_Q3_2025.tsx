@@ -25,7 +25,7 @@ const PLTR_DATA = {
   ticker: 'PLTR',
   quarter: 'Q3',
   fiscal_year: 2025,
-  call_date: '2025-11-05',
+  call_date: '2025-11-03',
 
   // TODO: Replace with actual data from insights.json
   financials: {
@@ -193,16 +193,11 @@ export const PLTR_Q3_2025: React.FC = () => {
   return (
     <AbsoluteFill className="bg-black">
       {/* Audio Track - Full earnings call (trimmed) */}
-      {/* Symlinked from: /var/earninglens/_downloads/jUnV3LiN0_k/source.trimmed.mp4 */}
+      {/* MVP: Copied to public/audio/ directory */}
       <Audio src={staticFile('audio/PLTR_Q3_2025.mp4')} />
 
-      {/* Title Card: 0-5s */}
-      <Sequence from={0} durationInFrames={fps * 5}>
-        <TitleCard />
-      </Sequence>
-
-      {/* Simple Banner Overlay - Full Duration (after title) */}
-      <Sequence from={fps * 5} durationInFrames={durationInFrames - fps * 5}>
+      {/* Simple Banner Overlay - Full Duration from start */}
+      <Sequence from={0} durationInFrames={durationInFrames}>
         <SimpleBanner />
       </Sequence>
 

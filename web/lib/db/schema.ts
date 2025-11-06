@@ -36,7 +36,7 @@ export const sourceDataSchema = z.object({
   r2Bucket: z.string(),
   downloadedAt: z.string().optional(),
   processingStatus: z.string().optional(),
-  processingResults: z.record(z.any()).optional(),
+  processingResults: z.record(z.string(), z.any()).optional(),
   youtube: z
     .object({
       videoId: z.string(),
@@ -90,23 +90,23 @@ export const videoDataSchema = z.object({
   r2VideoPath: z.string(),
   r2VideoUrl: z.string().url().optional(),
   fileSize: z.number().optional(),
-  remotionProps: z.record(z.any()).optional(),
-  renderConfig: z.record(z.any()).optional(),
+  remotionProps: z.record(z.string(), z.any()).optional(),
+  renderConfig: z.record(z.string(), z.any()).optional(),
   renderTime: z.number().optional(),
   renderedAt: z.string().optional(),
   sources: z.array(
     z.object({
       id: z.string(),
       purpose: z.string(),
-      usage: z.record(z.any()),
+      usage: z.record(z.string(), z.any()),
     })
   ),
   artifacts: z.array(
     z.object({
       id: z.string(),
       purpose: z.string(),
-      timing: z.record(z.any()).optional(),
-      usage: z.record(z.any()).optional(),
+      timing: z.record(z.string(), z.any()).optional(),
+      usage: z.record(z.string(), z.any()).optional(),
     })
   ),
   youtube: z

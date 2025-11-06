@@ -354,11 +354,11 @@ class EarningsProcessor:
 
         # Flat structure - all files at root level
         video_dir = DOWNLOADS_DIR / self.video_id
-        transcript_file = video_dir / "transcript.json"
+        transcript_file = video_dir / "transcript.paragraphs.json"
         output_file = video_dir / "insights.json"
 
         if not transcript_file.exists():
-            raise FileNotFoundError("Transcript not found. Run transcribe step first.")
+            raise FileNotFoundError("Transcript paragraphs file not found. Run transcribe step first.")
 
         # Get metadata from parse step
         company_name = self.state.get_data("parse", "company_name")

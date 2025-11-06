@@ -33,17 +33,7 @@ export const auth = betterAuth({
         // TODO: Implement email sending (Resend)
         console.log('Send invitation email:', data);
       },
-      roles: {
-        owner: {
-          permissions: ['admin', 'manage_members', 'delete_org'],
-        },
-        admin: {
-          permissions: ['manage_members', 'manage_content'],
-        },
-        member: {
-          permissions: ['view_content'],
-        },
-      },
+      // roles configuration removed temporarily - will be added when better-auth plugin supports it
     }),
   ],
   trustedOrigins: [

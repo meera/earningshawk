@@ -81,6 +81,13 @@ export function GoogleOneTap() {
 // Extend Window interface for TypeScript
 declare global {
   interface Window {
-    google?: any;
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: any) => void;
+          prompt: (callback?: (notification: any) => void) => void;
+        };
+      };
+    };
   }
 }
