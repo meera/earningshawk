@@ -106,13 +106,11 @@ const PlaceholderCard: React.FC<{text: string}> = ({text}) => {
 export const PLTR_Q3_2025: React.FC = () => {
   const {fps, durationInFrames} = useVideoConfig();
 
-  // Audio path - using the trimmed video from _downloads
-  const audioPath = '/var/earninglens/_downloads/jUnV3LiN0_k/source.trimmed.mp4';
-
   return (
     <AbsoluteFill>
       {/* Audio Track - Full earnings call (trimmed) */}
-      <Audio src={audioPath} />
+      {/* Symlinked from: /var/earninglens/_downloads/jUnV3LiN0_k/source.trimmed.mp4 */}
+      <Audio src={staticFile('audio/PLTR_Q3_2025.mp4')} />
 
       {/* Title Card: 0-5s */}
       <Sequence from={0} durationInFrames={fps * 5}>

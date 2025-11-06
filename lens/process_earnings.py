@@ -193,7 +193,12 @@ class EarningsProcessor:
 
         if result.returncode != 0:
             self.logger.error(f"Script failed: {script_path.name}")
-            print(result.stderr)
+            if result.stdout:
+                print("STDOUT:")
+                print(result.stdout)
+            if result.stderr:
+                print("STDERR:")
+                print(result.stderr)
             raise RuntimeError(f"Script failed with code {result.returncode}")
 
         return result
