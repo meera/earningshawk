@@ -9,16 +9,23 @@ export const revalidate = 3600;
 
 export default async function HomePage() {
   // Fetch published videos with company data
-  const latestVideos = await db
-    .select({
-      video: videos,
-      company: companies,
-    })
-    .from(videos)
-    .leftJoin(companies, eq(videos.companyId, companies.id))
-    .where(eq(videos.status, 'published'))
-    .orderBy(desc(videos.publishedAt))
-    .limit(12);
+  let latestVideos = [];
+
+  try {
+    latestVideos = await db
+      .select({
+        video: videos,
+        company: companies,
+      })
+      .from(videos)
+      .leftJoin(companies, eq(videos.companyId, companies.id))
+      .where(eq(videos.status, 'published'))
+      .orderBy(desc(videos.publishedAt))
+      .limit(12);
+  } catch (error) {
+    console.error('Failed to fetch videos:', error);
+    // Continue with empty array - show "Coming Soon" message
+  }
 
   return (
     <>
