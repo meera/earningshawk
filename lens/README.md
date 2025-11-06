@@ -4,6 +4,12 @@ Complete Python-based pipeline for processing earnings call videos. Works on bot
 
 **Supports parallel processing** - process multiple videos simultaneously with automatic state management.
 
+## Hybrid Workflow: Automated Prep + Manual Composition
+
+**Steps 1-5:** Automated asset preparation (this pipeline)
+**Step 6:** Manual creative work in Remotion Studio
+**Step 7:** Automated YouTube upload
+
 ## Quick Start
 
 ```bash
@@ -12,45 +18,64 @@ cd ~/earninglens
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Process a video (all steps)
-python lens/process_earnings.py --url "https://www.youtube.com/watch?v=jUnV3LiN0_k"
+# Process video through insights (Steps 1-5)
+python lens/process_earnings.py --url "https://www.youtube.com/watch?v=jUnV3LiN0_k" --to insights
+
+# Then work on composition in Remotion Studio
+npm run remotion
+
+# Upload when ready
+python lens/process_earnings.py --url "https://www.youtube.com/watch?v=jUnV3LiN0_k" --step upload
 ```
 
 ## What It Does
 
-1. **Downloads** video from YouTube (via RapidAPI)
-2. **Parses** metadata → auto-detects company & quarter
-3. **Removes** initial silence from video
-4. **Transcribes** with Whisper (GPU-accelerated on sushi)
-5. **Extracts** insights with LLM
-6. **Renders** video with Remotion
-7. **Uploads** to YouTube
+### Automated Steps (1-5)
+1. **Download** - YouTube video via RapidAPI
+2. **Parse** - Auto-detect company, ticker, quarter
+3. **Remove Silence** - Trim initial silence from video
+4. **Transcribe** - Whisper GPU transcription → JSON, SRT, VTT, TXT
+5. **Extract Insights** - LLM analysis → key metrics, highlights
+
+### Manual Step (6)
+6. **Compose** - Custom visuals in Remotion Studio (not automated)
+   - Each video needs unique creative work
+   - Design charts, animations, timing
+   - Render when satisfied (take1, take2, etc.)
+
+### Automated Step (7)
+7. **Upload** - YouTube upload with optimized metadata
 
 ---
 
-## Individual Steps
+## Recommended Workflow
 
 ```bash
-# Download only
-python process_earnings.py --url "..." --step download
+# 1. Automated prep (Steps 1-5)
+python lens/process_earnings.py --url "..." --to insights
 
-# Parse metadata
-python process_earnings.py --url "..." --step parse
+# 2. Manual composition (Step 6) - open Remotion Studio
+npm run remotion
 
-# Remove silence
-python process_earnings.py --url "..." --step remove-silence
+# 3. Upload when ready (Step 7)
+python lens/process_earnings.py --url "..." --step upload
+```
 
-# Transcribe
-python process_earnings.py --url "..." --step transcribe
+## Individual Steps (Advanced)
 
-# Extract insights
-python process_earnings.py --url "..." --step insights
+```bash
+# Run individual steps
+python lens/process_earnings.py --url "..." --step download
+python lens/process_earnings.py --url "..." --step parse
+python lens/process_earnings.py --url "..." --step remove-silence
+python lens/process_earnings.py --url "..." --step transcribe
+python lens/process_earnings.py --url "..." --step insights
 
-# Render video
-python process_earnings.py --url "..." --step render
+# Skip render step (manual in Studio)
+# python lens/process_earnings.py --url "..." --step render
 
-# Upload to YouTube
-python process_earnings.py --url "..." --step upload
+# Upload manually after rendering
+python lens/process_earnings.py --url "..." --step upload
 ```
 
 ---
