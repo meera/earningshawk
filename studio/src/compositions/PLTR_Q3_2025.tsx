@@ -86,17 +86,58 @@ const TitleCard: React.FC = () => {
   );
 };
 
-const PlaceholderCard: React.FC<{text: string}> = ({text}) => {
+const SimpleBanner: React.FC = () => {
   const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, 20], [0, 1]);
+  const {fps, durationInFrames} = useVideoConfig();
+
+  // Simple fade in at start
+  const opacity = interpolate(frame, [0, 30], [0, 1], {extrapolateRight: 'clamp'});
+
+  // Calculate elapsed time
+  const totalSeconds = Math.floor(frame / fps);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const timeDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
   return (
-    <AbsoluteFill className="bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-      <div style={{opacity}} className="text-center px-20">
-        <div className="text-4xl text-yellow-400 mb-8">⚠️ Work in Progress</div>
-        <div className="text-3xl text-gray-300">{text}</div>
-        <div className="text-xl text-gray-500 mt-8">
-          Waiting for insights extraction to complete
+    <AbsoluteFill style={{opacity}}>
+      {/* Top Banner */}
+      <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/90 via-black/70 to-transparent p-6">
+        <div className="flex items-center justify-between">
+          {/* Left: Company Info */}
+          <div>
+            <div className="text-4xl font-bold text-white mb-1">
+              {PLTR_DATA.company}
+            </div>
+            <div className="text-2xl text-indigo-300 font-mono">
+              ${PLTR_DATA.ticker} · {PLTR_DATA.quarter} {PLTR_DATA.fiscal_year}
+            </div>
+          </div>
+
+          {/* Right: Branding */}
+          <div className="text-right">
+            <div className="text-3xl font-bold text-white">EarningLens</div>
+            <div className="text-lg text-gray-400">Earnings Call Analysis</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Banner */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-6">
+        <div className="flex items-center justify-between">
+          {/* Left: Call Info */}
+          <div className="text-gray-300 text-xl">
+            Earnings Call · {new Date(PLTR_DATA.call_date).toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </div>
+
+          {/* Right: Time */}
+          <div className="text-gray-400 text-xl font-mono">
+            {timeDisplay}
+          </div>
         </div>
       </div>
     </AbsoluteFill>
@@ -107,7 +148,7 @@ export const PLTR_Q3_2025: React.FC = () => {
   const {fps, durationInFrames} = useVideoConfig();
 
   return (
-    <AbsoluteFill>
+    <AbsoluteFill className="bg-black">
       {/* Audio Track - Full earnings call (trimmed) */}
       {/* Symlinked from: /var/earninglens/_downloads/jUnV3LiN0_k/source.trimmed.mp4 */}
       <Audio src={staticFile('audio/PLTR_Q3_2025.mp4')} />
@@ -117,33 +158,22 @@ export const PLTR_Q3_2025: React.FC = () => {
         <TitleCard />
       </Sequence>
 
-      {/* Revenue Card: 5-13s */}
-      <Sequence from={fps * 5} durationInFrames={fps * 8}>
-        <PlaceholderCard text="Revenue metrics will appear here" />
-      </Sequence>
-
-      {/* EPS Card: 13-21s */}
-      <Sequence from={fps * 13} durationInFrames={fps * 8}>
-        <PlaceholderCard text="EPS and earnings beat/miss" />
+      {/* Simple Banner Overlay - Full Duration (after title) */}
+      <Sequence from={fps * 5} durationInFrames={durationInFrames - fps * 5}>
+        <SimpleBanner />
       </Sequence>
 
       {/*
-        TODO: Add more sequences based on transcript timestamps
-        - Key quotes from CEO/CFO
-        - Revenue breakdown
-        - Guidance
-        - Q&A highlights
-      */}
+        MVP: Simple banner overlay only
 
-      {/* Brand Watermark - always visible */}
-      <AbsoluteFill>
-        <div className="absolute top-8 right-8 text-gray-400 text-2xl font-bold">
-          EarningLens
-        </div>
-        <div className="absolute bottom-8 left-8 text-gray-500 text-lg">
-          {PLTR_DATA.ticker} {PLTR_DATA.quarter} {PLTR_DATA.fiscal_year}
-        </div>
-      </AbsoluteFill>
+        Future enhancements (after fixing context length):
+        - Transcript subtitles
+        - Key quotes from CEO/CFO
+        - Revenue charts
+        - EPS visualization
+        - Guidance highlights
+        - Q&A segments
+      */}
     </AbsoluteFill>
   );
 };
