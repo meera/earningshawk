@@ -1,6 +1,14 @@
 # YouTube Thumbnail Generator
 
-Automatically generates professional YouTube thumbnails for EarningLens earnings call videos.
+⚠️ **DEPRECATED - Use the new Artistic Thumbnail Generator instead!**
+
+👉 **See:** `ARTISTIC-THUMBNAILS.md` for eye-catching, professional thumbnails with actual video frames
+
+---
+
+## Legacy Basic Generator
+
+Automatically generates basic YouTube thumbnails for EarningLens earnings call videos.
 
 ## Features
 
