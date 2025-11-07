@@ -9,6 +9,8 @@ Pipeline order:
 3. Transcribe - Run Whisper on original video
 4. Smart Trim - Cut 5s before first speech (keeps title music)
 5. Insights - Extract metrics/highlights with GPT-4o
+5.5. Speaker Photos - Search for speaker headshots on the web
+5.6. Thumbnails - Generate 4 thumbnail variations
 6. Render - Create final video with Remotion
 7. Upload - Upload to YouTube
 
@@ -446,6 +448,95 @@ class EarningsProcessor:
         })
         self.logger.success("Insights extracted")
 
+    def step_speaker_photos(self):
+        """Step 5.5: Search for speaker photos"""
+        self.logger.step("Step 5.5/9: Search for speaker photos")
+
+        if self.state.get_state("speaker_photos") == "completed":
+            self.logger.info("Already searched, skipping")
+            return
+
+        # Flat structure - all files at root level
+        video_dir = DOWNLOADS_DIR / self.video_id
+        insights_file = video_dir / "insights.json"
+
+        if not insights_file.exists():
+            raise FileNotFoundError("Insights file not found. Run insights step first.")
+
+        # Run speaker photo search
+        script = PIPELINE_DIR / "speaker_search.py"
+        args = [
+            "--insights-path", str(insights_file)
+        ]
+        self._run_python_script(script, args)
+
+        self.state.update_state("speaker_photos", "completed", {
+            "status": "searched"
+        })
+        self.logger.success("Speaker photos searched")
+
+    def step_thumbnails(self):
+        """Step 5.6: Generate thumbnail variations"""
+        self.logger.step("Step 5.6/9: Generate thumbnail variations")
+
+        if self.state.get_state("thumbnails") == "completed":
+            self.logger.info("Already generated, skipping")
+            return
+
+        # Get metadata from parse step
+        ticker = self.state.get_data("parse", "ticker")
+        quarter = self.state.get_data("parse", "quarter")
+        company_name = self.state.get_data("parse", "company_name")
+
+        # Load insights with speaker photos
+        video_dir = DOWNLOADS_DIR / self.video_id
+        insights_file = video_dir / "insights.json"
+
+        if not insights_file.exists():
+            raise FileNotFoundError("Insights file not found. Run insights step first.")
+
+        with open(insights_file, 'r') as f:
+            insights = json.load(f)
+
+        # Prepare thumbnail data
+        thumbnail_data = {
+            "company": company_name,
+            "ticker": ticker,
+            "quarter": quarter.split('-')[0],  # "Q3-2025" -> "Q3"
+            "fiscal_year": int(quarter.split('-')[1]) if '-' in quarter else 2025,
+            "insights": insights
+        }
+
+        # Output directory in company folder
+        company_dir = ORGANIZED_DIR / ticker / quarter
+        company_dir.mkdir(parents=True, exist_ok=True)
+        output_base = company_dir / "thumbnail.jpg"
+
+        # Create temporary data file
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp:
+            json.dump(thumbnail_data, tmp, indent=2)
+            tmp_data_path = tmp.name
+
+        try:
+            # Run thumbnail generator
+            script = PIPELINE_DIR / "generate_thumbnail.py"
+            args = [
+                str(tmp_data_path),
+                str(output_base),
+                "--variant", "all"  # Generate all 4 variants
+            ]
+            self._run_python_script(script, args)
+
+            self.state.update_state("thumbnails", "completed", {
+                "thumbnails_base": str(output_base)
+            })
+            self.logger.success(f"Thumbnails generated: {output_base.parent}")
+        finally:
+            # Clean up temporary file
+            import os
+            os.unlink(tmp_data_path)
+
     def step_render(self):
         """Step 6: Render video with Remotion"""
         self.logger.step("Step 6/7: Render video with Remotion")
@@ -515,6 +606,8 @@ class EarningsProcessor:
             "transcribe": self.step_transcribe,
             "smart-trim": self.step_smart_trim,
             "insights": self.step_insights,
+            "speaker-photos": self.step_speaker_photos,
+            "thumbnails": self.step_thumbnails,
             "render": self.step_render,
             "upload": self.step_upload,
         }
@@ -526,7 +619,7 @@ class EarningsProcessor:
 
     def run_from_step(self, step_name: str):
         """Run from a specific step onwards"""
-        all_steps = ["download", "parse", "transcribe", "smart-trim", "insights", "render", "upload"]
+        all_steps = ["download", "parse", "transcribe", "smart-trim", "insights", "speaker-photos", "thumbnails", "render", "upload"]
 
         try:
             start_idx = all_steps.index(step_name)
@@ -547,6 +640,8 @@ class EarningsProcessor:
         self.step_transcribe()
         self.step_smart_trim()
         self.step_insights()
+        self.step_speaker_photos()
+        self.step_thumbnails()
         self.step_render()
         self.step_upload()
 
@@ -582,7 +677,7 @@ def main():
     parser.add_argument("--url", required=True, help="YouTube URL")
     parser.add_argument("--ticker", help="Company ticker symbol (e.g., HOOD, PLTR)")
     parser.add_argument("--quarter", help="Quarter (e.g., Q3-2025)")
-    parser.add_argument("--step", help="Run single step (download, parse, transcribe, smart-trim, insights, render, upload)")
+    parser.add_argument("--step", help="Run single step (download, parse, transcribe, smart-trim, insights, speaker-photos, thumbnails, render, upload)")
     parser.add_argument("--from", dest="from_step", help="Run from specific step onwards")
 
     args = parser.parse_args()

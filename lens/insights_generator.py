@@ -193,9 +193,17 @@ INSIGHTS_EXTRACTION_SCHEMA = {
                                 "role": {"type": ["string", "null"]},
                                 "company": {"type": ["string", "null"]},
                                 "mention_count": {"type": "integer"},
-                                "context": {"type": "array", "items": {"type": "string"}}
+                                "context": {"type": "array", "items": {"type": "string"}},
+                                "photoUrl": {
+                                    "type": ["string", "null"],
+                                    "description": "URL of speaker headshot photo (populated by speaker_search.py)"
+                                },
+                                "photoLocalPath": {
+                                    "type": ["string", "null"],
+                                    "description": "Local file path to downloaded speaker photo"
+                                }
                             },
-                            "required": ["name", "role", "company", "mention_count", "context"],
+                            "required": ["name", "role", "company", "mention_count", "context", "photoUrl", "photoLocalPath"],
                             "additionalProperties": False
                         }
                     },
@@ -426,7 +434,8 @@ Identify the real names of speakers from the transcript content:
 Identify ALL entities explicitly mentioned (return empty arrays if none):
 
 1. **People**: Names or roles referenced.
-   - Each person: name (string), role (string or null), company (string or null), mention_count (integer), context (array of 1-2 strings).
+   - Each person: name (string), role (string or null), company (string or null), mention_count (integer), context (array of 1-2 strings), photoUrl (always null), photoLocalPath (always null).
+   - NOTE: photoUrl and photoLocalPath should ALWAYS be set to null. These will be populated later by the speaker photo search process.
 2. **Organizations**: Companies, institutions, agencies.
    - Each organization: name (string), type (string or null), mention_count (integer), context (array of strings).
 3. **Products**: Products, services, tools, or platforms.
