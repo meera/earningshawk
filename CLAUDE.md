@@ -60,7 +60,14 @@ We don't compete on data (available everywhere). We compete on **presentation an
 6. **Scale Through Automation**
    - Build once, run 1000+ times
    - Every company, every quarter
-   - Mostly automated pipeline: Download → Transcribe → First AI Version -> Manual Creative Tweak + AI assisted Manual Validation → Render  → Upload
+   - Automated pipeline: Download → Parse → Transcribe → Smart Trim → Insights → Render → Upload
+     1. **Download** - Get video from YouTube
+     2. **Parse** - Extract ticker/quarter from metadata
+     3. **Transcribe** - Run Whisper on original video
+     4. **Smart Trim** - Cut 5s before first speech (keeps intro music)
+     5. **Insights** - GPT-4o extracts metrics/highlights
+     6. **Render** - Remotion generates final video with overlays
+     7. **Upload** - Push to YouTube with metadata
    - Goal: 10 videos per week → 50 videos per week → 500+ videos per quarter
 
 ### The Three Pillars of Truth
@@ -424,6 +431,123 @@ earninglens/
 - `lens/` - Processing pipeline (Python)
 - `marketing/` - Marketing materials
 - `shared/` - Shared code/types
+
+---
+
+## Video Composition & Enhancement System
+
+### Philosophy: MVP Approach
+
+**For MVP:**
+- ✅ Create **generic, reusable enhancement components** (MetricDisplay, AnimatedTitle, etc.)
+- ❌ Do NOT abstract compositions - one specific composition per video
+- Build `HOOD_Q3_2025.tsx`, `PLTR_Q3_2025.tsx`, etc. with hardcoded timing
+- Focus on shipping videos quickly, not building a template engine
+
+### Enhancement Components (Generic, Reusable)
+
+**Location:** `studio/src/components/enhancements/`
+
+**Available Components:**
+1. **AnimatedTitle** - Opening title card with company branding
+2. **MetricDisplay** - Animated metric cards (revenue, EPS, subscribers, etc.)
+3. **SpeakerLabel** - Speaker identification lower thirds
+4. **CompanyLogo** - Persistent watermark logo
+5. **CallToAction** - End-screen CTA with subscribe button
+6. ~~**ChapterProgress**~~ - **NOT USED** (chapters don't make sense for earnings calls)
+
+**Brand Profiles:**
+- `lens/companies/HOOD.json` - Robinhood green theme (#00C805)
+- `lens/companies/PLTR.json` - Palantir blue theme (#0033A0)
+- `lens/companies/_default.json` - Fallback theme
+
+**Key Principle:** All components accept `brandColors` prop and adapt styling automatically.
+
+### Video Composition Pattern
+
+**Example:** `studio/src/compositions/HOOD_Q3_2025.tsx`
+
+```typescript
+import {OffthreadVideo, Sequence} from 'remotion';
+import {AnimatedTitle, MetricDisplay, CompanyLogo, CallToAction} from '../components/enhancements';
+import robinhoodBrand from '../../../lens/companies/HOOD.json';
+
+export const HOOD_Q3_2025: React.FC = () => {
+  const videoPath = staticFile('audio/HOOD_Q3_2025.mp4');
+
+  return (
+    <AbsoluteFill>
+      {/* Title card (0-5s) */}
+      <Sequence from={0} durationInFrames={150}>
+        <AnimatedTitle company="Robinhood" quarter="Q3" year={2025}
+                       brandColors={robinhoodBrand.brandColors} />
+      </Sequence>
+
+      {/* Main video (5s onwards) */}
+      <Sequence from={150} durationInFrames={durationInFrames - 450}>
+        <OffthreadVideo src={videoPath} />
+      </Sequence>
+
+      {/* Metric at specific timestamp (from insights.json) */}
+      <Sequence from={fps * 107} durationInFrames={fps * 5}>
+        <MetricDisplay metric="Revenue" value="$1.3B" change="+100% YoY"
+                       changeType="positive" brandColors={robinhoodBrand.brandColors} />
+      </Sequence>
+
+      {/* Persistent logo */}
+      <Sequence from={150} durationInFrames={durationInFrames - 150}>
+        <CompanyLogo logoUrl={robinhoodBrand.logo.url}
+                     brandColors={robinhoodBrand.brandColors} />
+      </Sequence>
+
+      {/* End CTA (last 10s) */}
+      <Sequence from={durationInFrames - 300} durationInFrames={300}>
+        <CallToAction message="View full analysis" url="EarningLens.com/HOOD/Q3-2025"
+                      brandColors={robinhoodBrand.brandColors} />
+      </Sequence>
+    </AbsoluteFill>
+  );
+};
+```
+
+**Registration in Root.tsx:**
+```typescript
+<Composition
+  id="HOOD-Q3-2025"
+  component={HOOD_Q3_2025}
+  durationInFrames={139254} // 77 min at 30fps
+  fps={30}
+  width={1920}
+  height={1080}
+/>
+```
+
+### Audio/Video Files for Remotion Studio
+
+**On Mac (for preview):**
+```bash
+# Create symlink to processed video
+ln -sf /var/earninglens/_downloads/<video_id>/source.trimmed.mp4 \
+       ~/earninglens/studio/public/audio/HOOD_Q3_2025.mp4
+```
+
+**On Sushi (for rendering):**
+- No symlinks needed - pipeline creates files in `/var/earninglens/`
+- Remotion render command accesses files directly
+
+### Design Decisions
+
+**Why no chapter progress bar?**
+- Earnings calls are continuous conversations, not segmented content
+- Chapters like "Opening Remarks", "Q&A Part 1", "Q&A Part 2" add no value
+- Users care about metrics/highlights, not artificial chapter boundaries
+- **Decision:** ChapterProgress component exists but should NOT be used in earnings videos
+
+**What to use instead:**
+- Metric overlays at key timestamps (from insights.json)
+- Speaker labels when speakers change
+- Persistent company logo watermark
+- End-screen CTA
 
 ---
 
