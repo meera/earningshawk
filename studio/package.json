@@ -1,7 +1,7 @@
 {
-  "name": "@earningshawk/studio",
+  "name": "@markethawk/studio",
   "version": "0.1.0",
-  "description": "Video production with Remotion for EarningsHawk earnings videos",
+  "description": "Video production with Remotion for MarketHawk earnings videos",
   "private": true,
   "scripts": {
     "start": "remotion studio",

@@ -1,4 +1,4 @@
-# EarningsHawk
+# MarketHawk
 
 **Transform earnings calls into visually-enhanced YouTube videos.**
 

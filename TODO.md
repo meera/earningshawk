@@ -1,4 +1,4 @@
-# EarningsHawk TODO
+# MarketHawk TODO
 
 ## High Priority
 
@@ -6,7 +6,7 @@
 **Need**: Automated thumbnail validation to ensure quality before upload
 **Requirements**:
 - Check text readability (sufficient contrast with background)
-- Verify EarningsHawk branding is visible
+- Verify MarketHawk branding is visible
 - Verify company branding (logo/colors) is prominent
 - Ensure thumbnail is visually attractive and engaging
 - Flag thumbnails that don't meet quality standards
