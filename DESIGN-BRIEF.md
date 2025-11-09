@@ -1,16 +1,21 @@
-# EarningLens Design System
+# MarketHawk Design System
 
-**Version:** 1.0
-**Last Updated:** November 3, 2025
+**Version:** 2.0
+**Last Updated:** November 9, 2025
+**Brand:** MarketHawk (formerly EarningLens)
+**Domain:** market-hawk.com
 
 ## Design Philosophy
 
-EarningLens transforms drab earnings calls into visually engaging content. Our design system prioritizes:
+MarketHawk transforms drab earnings calls into visually engaging content. Like a hawk spotting opportunities from above, we provide sharp, focused insights through compelling visual storytelling.
+
+Our design system prioritizes:
 
 1. **Professional credibility** - Financial data requires trust
 2. **Visual clarity** - Complex data must be instantly comprehensible
 3. **Seamless experience** - YouTube videos → Website should feel unified
 4. **Engagement over aesthetics** - Boring data presented beautifully
+5. **Mobile-first excellence** - Monitor anywhere, anytime
 
 ---
 
@@ -18,24 +23,29 @@ EarningLens transforms drab earnings calls into visually engaging content. Our d
 
 ### Primary Colors
 
-**Brand Primary - Financial Blue**
+**Hawk Blue - Primary Brand Color**
 ```
-Primary Blue:     #2563EB (rgb(37, 99, 235))
-Primary Hover:    #1D4ED8 (rgb(29, 78, 216))
-Primary Light:    #3B82F6 (rgb(59, 130, 246))
-Primary Dark:     #1E40AF (rgb(30, 64, 175))
+hawk-50:   #EFF6FF  // Lightest - backgrounds
+hawk-100:  #DBEAFE  // Light - hover states
+hawk-500:  #3B82F6  // PRIMARY - main brand color
+hawk-600:  #2563EB  // Darker - primary hover/active
+hawk-700:  #1D4ED8  // Dark - emphasis
+hawk-800:  #1E40AF  // Darker - headings
+hawk-900:  #1E3A8A  // Darkest
 ```
 
 **Usage:**
-- Primary CTAs (Subscribe, Sign In)
+- Primary CTAs (Subscribe, Sign In, Watch Now)
 - Links and interactive elements
 - Chart primary lines
 - Brand accents in videos
+- Focus rings and active states
 
-**Why Blue:**
+**Why Hawk Blue:**
 - Industry standard for financial/data applications
-- High trust association
-- Excellent contrast for accessibility
+- High trust association (credibility is critical)
+- Excellent contrast for accessibility (WCAG AAA)
+- Sharp and focused like a hawk's gaze
 - Complements YouTube without competing
 
 ---
@@ -61,31 +71,47 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
 ---
 
-### Data Visualization Colors
+### Semantic Colors
 
-**Trend Colors (Critical for Financial Data)**
-
+**Success (Positive Metrics)**
 ```
-Positive/Up:      #48BB78 (rgb(72, 187, 120))  /* Green */
-Negative/Down:    #F56565 (rgb(245, 101, 101)) /* Red */
-Neutral:          #718096 (rgb(113, 128, 150)) /* Gray */
-Warning:          #F59E0B (rgb(245, 158, 11))  /* Amber */
+success-50:   #ECFDF5  // Light backgrounds
+success-500:  #10B981  // Primary green - +15% growth
+success-600:  #059669  // Hover state
+success-700:  #047857  // Dark backgrounds
+```
+
+**Error (Negative Metrics)**
+```
+error-50:   #FFF1F2  // Light backgrounds
+error-500:  #F43F5E  // Primary red - -8% decline
+error-600:  #E11D48  // Hover state
+error-700:  #BE123C  // Dark backgrounds
+```
+
+**Warning (Caution)**
+```
+warning-50:   #FFFBEB  // Light backgrounds
+warning-500:  #F59E0B  // Primary amber - mixed signals
+warning-600:  #D97706  // Hover state
 ```
 
 **Usage:**
-- Stock price changes: Green (up), Red (down)
-- Metric cards with trend indicators
-- Chart lines (revenue, EPS, etc.)
-- Percentage change badges
+- **Success:** Revenue beat, positive growth, exceeded expectations
+- **Error:** Revenue miss, declining metrics, errors
+- **Warning:** Guidance changes, mixed signals, caution areas
+- **Neutral (Slate-500):** Informational data, no trend
 
-**Data Viz Palette (for multi-line charts):**
+**Data Visualization Palette (Multi-line charts):**
 ```
-Chart Line 1:     #2563EB (Primary Blue)
-Chart Line 2:     #48BB78 (Green)
-Chart Line 3:     #667EEA (Purple)
-Chart Line 4:     #F59E0B (Amber)
-Chart Line 5:     #EC4899 (Pink)
-Chart Line 6:     #14B8A6 (Teal)
+Chart Line 1:  #3B82F6  (Hawk Blue)
+Chart Line 2:  #10B981  (Success Green)
+Chart Line 3:  #667EEA  (Purple)
+Chart Line 4:  #F59E0B  (Warning Amber)
+Chart Line 5:  #EC4899  (Pink)
+Chart Line 6:  #14B8A6  (Teal)
+Chart Line 7:  #F43F5E  (Error Rose)
+Chart Line 8:  #8B5CF6  (Violet)
 ```
 
 ---
@@ -574,30 +600,60 @@ outline-offset: 2px;
 
 ### Tailwind Config
 
-```js
-// tailwind.config.js
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          DEFAULT: '#2563EB',
-          hover: '#1D4ED8',
-          light: '#3B82F6',
-          dark: '#1E40AF',
-        },
-        accent: {
-          DEFAULT: '#667EEA',
-          dark: '#764BA2',
-        },
-      },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Consolas', 'monospace'],
-      },
-    },
-  },
-};
+**Full configuration available in `/tailwind.config.ts`**
+
+Key extensions:
+```typescript
+// Colors
+hawk: {
+  50: '#EFF6FF',
+  500: '#3B82F6',  // Primary
+  600: '#2563EB',
+  900: '#1E3A8A',
+}
+
+success: {
+  500: '#10B981',  // Positive metrics
+}
+
+error: {
+  500: '#F43F5E',  // Negative metrics
+}
+
+// Company brands
+robinhood: { green: '#00C805' }
+palantir: { blue: '#0033A0' }
+apple: { blue: '#0071E3' }
+
+// Typography
+fontSize: {
+  'display-xl': ['4rem', { lineHeight: '1.1', fontWeight: '700' }],
+  'video-title': ['4rem', { lineHeight: '1.1' }],
+  'video-metric': ['3rem', { lineHeight: '1', fontWeight: '700' }],
+}
+
+fontFamily: {
+  sans: ['Inter', '-apple-system', ...],
+  mono: ['JetBrains Mono', 'Fira Code', ...],
+}
+
+// Shadows
+boxShadow: {
+  'card': '0 1px 3px rgba(0, 0, 0, 0.1), ...',
+  'metric': '0 10px 40px rgba(0, 0, 0, 0.1)',
+  'video-overlay': '0 8px 32px rgba(0, 0, 0, 0.15)',
+}
+
+// Animations
+animation: {
+  'fade-in': 'fadeIn 0.5s ease-in',
+  'slide-up': 'slideUp 0.5s ease-out',
+}
+```
+
+**Install required plugins:**
+```bash
+npm install -D @tailwindcss/forms @tailwindcss/typography @tailwindcss/aspect-ratio
 ```
 
 ---
@@ -668,6 +724,103 @@ Card: White background, 20px radius, shadow-lg
 
 ---
 
-**Last Updated:** November 3, 2025
-**Maintainer:** Meera
-**Status:** Active (v1.0)
+## Quick Start
+
+### 1. Install Fonts
+
+**Inter (Primary Font)**
+```html
+<!-- Add to <head> in layout.tsx -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+```
+
+**JetBrains Mono (Data/Code Font)**
+```html
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+```
+
+### 2. Install Dependencies
+
+```bash
+# Tailwind CSS and plugins
+npm install -D tailwindcss postcss autoprefixer
+npm install -D @tailwindcss/forms @tailwindcss/typography @tailwindcss/aspect-ratio
+
+# Initialize Tailwind (if not already done)
+npx tailwindcss init -p
+```
+
+### 3. Import Tailwind
+
+```css
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  body {
+    @apply font-sans antialiased;
+    @apply text-slate-600 bg-slate-50;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-slate-900;
+  }
+
+  code {
+    @apply font-mono;
+  }
+}
+```
+
+### 4. Example Component
+
+```tsx
+// components/MetricCard.tsx
+export function MetricCard({
+  label,
+  value,
+  change,
+  trend
+}: {
+  label: string;
+  value: string;
+  change: string;
+  trend: 'positive' | 'negative' | 'neutral';
+}) {
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-card hover:shadow-card-hover transition-shadow">
+      <dt className="text-sm font-medium text-slate-600 uppercase tracking-wide">
+        {label}
+      </dt>
+      <dd className="mt-2 text-3xl font-black text-slate-900 font-mono">
+        {value}
+      </dd>
+      <div className={`mt-2 flex items-center text-sm font-semibold ${
+        trend === 'positive' ? 'text-success-600' :
+        trend === 'negative' ? 'text-error-600' :
+        'text-slate-500'
+      }`}>
+        {trend === 'positive' && <ArrowUpIcon className="w-4 h-4 mr-1" />}
+        {trend === 'negative' && <ArrowDownIcon className="w-4 h-4 mr-1" />}
+        {change}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+**Version:** 2.0
+**Last Updated:** November 9, 2025
+**Maintainer:** Development Team
+**Status:** Active
+**Related Files:**
+- `/tailwind.config.ts` - Full Tailwind configuration
+- `/web/app/globals.css` - Global styles
+- `/CLAUDE.md` - Project documentation
