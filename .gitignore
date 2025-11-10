@@ -48,6 +48,7 @@ studio/out/
 
 # OS
 Thumbs.db
+._*
 
 # Python
 .venv/

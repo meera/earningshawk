@@ -54,7 +54,11 @@ class JobPipeline:
             # Note: render and upload are manual for now
 
             self.job.set_status("completed")
-            print("\n✓ Job completed successfully!")
+            print("\n✓ Pipeline completed! Ready for rendering.")
+            print(f"\nNext steps:")
+            print(f"1. Review insights: nano {self.job.job_file}")
+            print(f"2. Create Remotion composition for {self.job.job['company']['ticker']}_{self.job.job['company']['quarter'].replace('-', '_')}")
+            print(f"3. Render: npx remotion render <composition-id> {self.job_dir}/renders/take1.mp4")
 
         except Exception as e:
             self.job.set_status("failed")
@@ -299,8 +303,9 @@ class JobPipeline:
                 with open(usage_file, 'w') as f:
                     json.dump(raw_data['usage'], f, indent=2)
 
-        # Merge insights into job.yaml
-        self.job.update_step("insights", "completed", output=insights.model_dump())
+        # Merge insights into job.yaml (flatten - no nesting under 'output')
+        insights_dict = insights.model_dump()
+        self.job.update_step("insights", "completed", **insights_dict)
 
         print(f"  ✓ Insights extracted")
         print(f"    Raw backup: {raw_output}")

@@ -5,6 +5,7 @@ import {EarningsCallVideo} from './compositions/EarningsVideoFull';
 import {PLTR_Q3_2025} from './compositions/PLTR_Q3_2025';
 import {PLTR_Q3_2025_take2} from './compositions/PLTR_Q3_2025-take2';
 import {HOOD_Q3_2025} from './compositions/HOOD_Q3_2025';
+import {BIP_Q3_2025} from './compositions/BIP_Q3_2025';
 import {
 	SubscribeExample,
 	OutroExample,
@@ -55,6 +56,14 @@ export const RemotionRoot: React.FC = () => {
 						id="PLTR-Q3-2025-take2"
 						component={PLTR_Q3_2025_take2}
 						durationInFrames={79000} // ~44 min at 30fps
+						fps={30}
+						width={1920}
+						height={1080}
+					/>
+					<Composition
+						id="BIP-Q3-2025"
+						component={BIP_Q3_2025}
+						durationInFrames={54826} // 30m 27s (1827.527s * 30fps)
 						fps={30}
 						width={1920}
 						height={1080}

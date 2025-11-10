@@ -76,7 +76,4 @@ processing:
 
   insights:
     status: pending
-    highlights: []
-    chapters: []
-    youtube_title: null
-    youtube_description: null
+    # Will be populated with: speakers, financial_metrics, highlights, chapters, summary, youtube_title, youtube_description

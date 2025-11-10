@@ -128,13 +128,13 @@ def create_job(args):
 
     # Create job directory (collocation: everything in one place)
     job_dir = JOBS_DIR / job_id
-    job_dir.mkdir(parents=True, exist_ok=True)
+    job_dir.mkdir(parents=True, exist_ok=True, mode=0o755)
 
-    # Create subdirectories
-    (job_dir / "input").mkdir(exist_ok=True)
-    (job_dir / "transcripts").mkdir(exist_ok=True)
-    (job_dir / "renders").mkdir(exist_ok=True)
-    (job_dir / "thumbnails").mkdir(exist_ok=True)
+    # Create subdirectories with permissive permissions for SMB/cross-machine access
+    (job_dir / "input").mkdir(exist_ok=True, mode=0o755)
+    (job_dir / "transcripts").mkdir(exist_ok=True, mode=0o755)
+    (job_dir / "renders").mkdir(exist_ok=True, mode=0o755)
+    (job_dir / "thumbnails").mkdir(exist_ok=True, mode=0o755)
 
     # Save job.yaml inside job directory
     job_file = job_dir / "job.yaml"

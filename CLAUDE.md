@@ -2295,3 +2295,4 @@ See `PRD.md` for detailed phase-by-phase roadmap.
 Show enough content for SEO indexing
 Add sign-in some point in time to encourage user- sign. Blurr some part of webpage.
 - ccm = "critic and correct me . Proceed with action only if claude validates it to be good"
+- npx remotion render BIP-Q3-2025 /Volumes/markethawk/jobs/BIP_Q3_2025_20251109_135511/renders/take1.mp4 rendering step always need to happen in background ( to prevent accidental terminal shutdonwn nohub  or screen ) ( write this memory better

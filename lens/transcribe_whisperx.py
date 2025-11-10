@@ -121,25 +121,65 @@ def transcribe_earnings_call(
 
     logger.info(f"Saved JSON: {transcript_json}")
 
-    # Save SRT (subtitles)
-    from whisperx.utils import get_writer
-    srt_writer = get_writer("srt", str(output_dir))
-    srt_writer(result, str(video_file.stem))
-    logger.info(f"Saved SRT: {output_dir / video_file.stem}.srt")
+    # Save paragraphs.json (compact format for LLM - saves tokens)
+    paragraphs = create_paragraph_format(result)
+    paragraphs_json = output_dir / "transcript.paragraphs.json"
+    with open(paragraphs_json, 'w', encoding='utf-8') as f:
+        json.dump(paragraphs, f, indent=2, ensure_ascii=False)
 
-    # Save VTT (web captions)
-    vtt_writer = get_writer("vtt", str(output_dir))
-    vtt_writer(result, str(video_file.stem))
-    logger.info(f"Saved VTT: {output_dir / video_file.stem}.vtt")
-
-    # Save TXT (plain text)
-    txt_writer = get_writer("txt", str(output_dir))
-    txt_writer(result, str(video_file.stem))
-    logger.info(f"Saved TXT: {output_dir / video_file.stem}.txt")
+    logger.info(f"Saved paragraphs: {paragraphs_json}")
 
     logger.info("Transcription complete!")
 
     return result
+
+
+def create_paragraph_format(result: Dict) -> Dict:
+    """
+    Create compact paragraph format for LLM processing
+    Groups consecutive segments by speaker into paragraphs
+    """
+    segments = result.get("segments", [])
+
+    paragraphs = []
+    current_speaker = None
+    current_text = []
+    current_start = None
+
+    for segment in segments:
+        speaker = segment.get("speaker", "UNKNOWN")
+        text = segment.get("text", "").strip()
+        start = segment.get("start", 0)
+
+        # Group consecutive segments from same speaker
+        if speaker == current_speaker:
+            current_text.append(text)
+        else:
+            # Save previous speaker's paragraph
+            if current_speaker and current_text:
+                paragraphs.append({
+                    "speaker": current_speaker,
+                    "start": current_start,
+                    "text": " ".join(current_text)
+                })
+
+            # Start new speaker
+            current_speaker = speaker
+            current_text = [text]
+            current_start = start
+
+    # Save last speaker
+    if current_speaker and current_text:
+        paragraphs.append({
+            "speaker": current_speaker,
+            "start": current_start,
+            "text": " ".join(current_text)
+        })
+
+    return {
+        "language": result.get("language", "en"),
+        "paragraphs": paragraphs
+    }
 
 
 if __name__ == "__main__":
