@@ -1,4 +1,4 @@
-# Market Hawk Eye Website Setup
+# Markey HawkEye Website Setup
 
 Simple landing page with newsletter subscription.
 
@@ -22,7 +22,7 @@ Visit: http://localhost:3000
 ## Landing Page Features
 
 ✅ **Complete Look** - No "Coming Soon" or "Waitlist" language
-✅ **Vision Statement** - Clear explanation of what Market Hawk Eye does
+✅ **Vision Statement** - Clear explanation of what Markey HawkEye does
 ✅ **Newsletter Subscription** - Collects emails for updates
 ✅ **Mobile Responsive** - Works on all devices
 ✅ **Professional Design** - Gradient background, modern UI

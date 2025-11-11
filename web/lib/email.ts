@@ -22,7 +22,7 @@ export async function sendEmail({
   });
 
   const mailData = {
-    from: 'Market Hawk Eye <meera@videotobe.com>',
+    from: 'Markey HawkEye <meera@videotobe.com>',
     to: to,
     subject: subject,
     text: text,
@@ -41,7 +41,7 @@ export async function sendEmail({
 
 export async function sendNewSubscriberNotification(subscriberEmail: string) {
   const subject = `New Newsletter Subscriber: ${subscriberEmail}`;
-  const text = `New subscriber to Market Hawk Eye newsletter:\n\nEmail: ${subscriberEmail}\nSubscribed at: ${new Date().toISOString()}`;
+  const text = `New subscriber to Markey HawkEye newsletter:\n\nEmail: ${subscriberEmail}\nSubscribed at: ${new Date().toISOString()}`;
   const html = `
     <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px;">
       <h2 style="color: #10B981;">New Newsletter Subscriber</h2>

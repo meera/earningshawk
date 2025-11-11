@@ -4,12 +4,12 @@ Guidance for Claude Code when working with MarketHawk repository.
 
 ---
 
-## Project: Market Hawk Eye
+## Project: Markey HawkEye
 
 **Website:** [markethawkeye.com](https://markethawkeye.com)
 
 ### Overview
-Market Hawk Eye transforms earnings call audio into visually-enhanced YouTube videos with an interactive SaaS web platform. The monetization is important goal. Monetization will be in three ways - 
+Markey HawkEye transforms earnings call audio into visually-enhanced YouTube videos with an interactive SaaS web platform. The monetization is important goal. Monetization will be in three ways - 
 1.Sell subscription to Sass
 2. YouTube Monetization
 3. Get companies to place orders to generate their videos.  

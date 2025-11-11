@@ -1,4 +1,4 @@
-# Market Hawk Eye
+# Markey HawkEye
 
 **Transform earnings calls into visually-enhanced YouTube videos.**
 

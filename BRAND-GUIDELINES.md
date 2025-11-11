@@ -1,10 +1,10 @@
-# Market Hawk Eye Brand Guidelines
+# Markey HawkEye Brand Guidelines
 
 **Last Updated:** November 10, 2025
 
 ## Brand Identity
 
-**Brand Name:** Market Hawk Eye
+**Brand Name:** Markey HawkEye
 **Domain:** markethawkeye.com
 **Tagline:** Transform earnings calls into visual insights
 **Visual Identity:** Ultra-modern, premium, data-focused with laser precision
@@ -188,7 +188,7 @@ background: linear-gradient(135deg, #FFBF00 0%, #EA580C 100%);
     {/* Amber accent burst */}
     <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#FFBF00] rounded-full animate-pulse"></span>
   </div>
-  <h1 className="text-[#F9FAFB] font-bold">Market Hawk Eye</h1>
+  <h1 className="text-[#F9FAFB] font-bold">Markey HawkEye</h1>
 </header>
 ```
 
@@ -332,18 +332,18 @@ const chartColors = [
 
 When creating videos for specific companies (AAPL, HOOD, PLTR), use **their** brand colors for video overlays.
 
-Use Market Hawk Eye colors for:
-- Market Hawk Eye watermark/logo
+Use Markey HawkEye colors for:
+- Markey HawkEye watermark/logo
 - Website elements
 - Marketing materials
 - Landing pages
 - Admin dashboard
 
-### Market Hawk Eye Brand Profile JSON
+### Markey HawkEye Brand Profile JSON
 ```json
 {
   "ticker": "HAWKEYE",
-  "name": "Market Hawk Eye",
+  "name": "Markey HawkEye",
   "brandColors": {
     "primary": "#10B981",
     "accent": "#FFBF00",

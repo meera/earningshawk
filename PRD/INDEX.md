@@ -1,6 +1,6 @@
 # PRD Documentation Index
 
-Complete documentation for **Market Hawk Eye** project.
+Complete documentation for **Markey HawkEye** project.
 
 🌐 **Website:** [markethawkeye.com](https://markethawkeye.com)
 
@@ -20,7 +20,7 @@ Never output coming soon or waitlist. Never ship implement features. Okay to shi
 
 ## SaaS Platform Guides
 
-Build the Market Hawk Eye web application:
+Build the Markey HawkEye web application:
 
 🌐 **[WEB-APP-GUIDE.md](./WEB-APP-GUIDE.md)** - Next.js Web Application
 - Next.js 14+ setup with App Router

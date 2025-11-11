@@ -41,7 +41,7 @@ export default function HomePage() {
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full shadow-lg shadow-accent/50 animate-pulse"></span>
               </div>
               <h1 className="text-2xl font-bold text-text-primary">
-                Market Hawk Eye
+                Markey HawkEye
               </h1>
             </div>
 
@@ -94,7 +94,7 @@ export default function HomePage() {
             </p>
 
             <p>
-              With Market Hawk Eye, you can:
+              With Markey HawkEye, you can:
             </p>
 
             <ul className="space-y-3 ml-6">
@@ -220,7 +220,7 @@ export default function HomePage() {
                 <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-accent rounded-full shadow-sm shadow-accent/50"></span>
               </div>
               <span className="text-text-tertiary text-sm">
-                © 2024 Market Hawk Eye. Transform earnings calls into visual insights.
+                © 2024 Markey HawkEye. Transform earnings calls into visual insights.
               </span>
             </div>
 
