@@ -1,7 +1,32 @@
 """
 MarketHawk Job Pipeline Processor
 Reads job.yaml and executes processing steps
+
+DEPRECATED: This file is deprecated in favor of the workflow system.
+Use lens/workflow.py instead for all job processing.
+
+Migration:
+    Old: python lens/process_job_pipeline.py /path/to/job.yaml
+    New: python lens/workflow.py /path/to/job.yaml
+
+The workflow system provides:
+- Composable workflows defined in YAML
+- Reusable step handlers
+- Conditional execution
+- Better extensibility
+
+This file will be removed in a future release.
 """
+
+import sys
+import warnings
+
+# Show deprecation warning
+warnings.warn(
+    "process_job_pipeline.py is deprecated. Use lens/workflow.py instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 import sys
 import os

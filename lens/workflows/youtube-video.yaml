@@ -1,0 +1,89 @@
+# YouTube Video Workflow
+# For processing earnings calls from YouTube videos (standard pipeline)
+
+name: youtube-video
+description: Process earnings calls from YouTube videos with full video rendering
+
+steps:
+  # Step 1: Download video from YouTube
+  - name: download
+    handler: download_source
+    required: true
+    description: Download video from YouTube URL
+
+  # Step 2: Parse YouTube metadata
+  - name: parse_metadata
+    handler: parse_metadata
+    required: false
+    description: Extract title, description, duration from YouTube
+    skip_if: "processing.download.status != 'completed'"
+
+  # Step 3: Transcribe with WhisperX
+  - name: transcribe
+    handler: transcribe_whisperx
+    required: true
+    description: Transcribe audio with speaker diarization
+    skip_if: "processing.download.status != 'completed'"
+
+  # Step 4: Detect trim point (skip silence at beginning)
+  - name: detect_trim
+    handler: detect_trim_point
+    required: false
+    description: Find first speech timestamp (for trim_start_seconds)
+    skip_if: "processing.transcribe.status != 'completed'"
+
+  # Step 5: Extract insights
+  - name: extract_insights
+    handler: extract_insights_structured
+    required: true
+    description: Extract financial metrics and highlights
+    skip_if: "processing.transcribe.status != 'completed'"
+
+  # Step 6: Refine timestamps
+  - name: refine_timestamps
+    handler: refine_timestamps
+    required: true
+    description: Refine timestamps to word-level precision
+    skip_if: "processing.extract_insights.status != 'completed'"
+
+  # Step 7: Upload artifacts to R2
+  - name: upload_artifacts
+    handler: upload_artifacts_r2
+    required: false
+    description: Upload transcript and insights to R2
+    skip_if: "processing.refine_timestamps.status != 'completed'"
+
+  # Step 8: Render video (manual or via pipeline)
+  - name: render
+    handler: remotion_render
+    required: false
+    description: Render video with Remotion
+    skip_if: "processing.refine_timestamps.status != 'completed'"
+
+  # Step 9: Upload to R2
+  - name: upload_r2
+    handler: upload_media_r2
+    required: false
+    description: Upload rendered video to R2
+    skip_if: "processing.render.status != 'completed'"
+
+  # Step 10: Generate thumbnails
+  - name: generate_thumbnails
+    handler: generate_thumbnails
+    required: false
+    description: Generate thumbnails from rendered video
+    skip_if: "processing.render.status != 'completed'"
+
+  # Step 11: Upload to YouTube
+  - name: upload_youtube
+    handler: upload_youtube
+    required: false
+    description: Upload to YouTube
+    skip_if: "processing.render.status != 'completed'"
+
+  # Step 12: Update database
+  - name: update_database
+    handler: update_database
+    required: false
+    description: Update earnings_calls table
+    skip_if: "processing.upload_r2.status != 'completed'"

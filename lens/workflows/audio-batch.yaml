@@ -1,0 +1,68 @@
+# Audio Batch Workflow
+# For batch processing YouTube earnings calls to audio-only archive
+
+name: audio-batch
+description: Batch process earnings calls with auto-detection, fuzzy matching, and database storage
+
+steps:
+  # Step 1: Download from YouTube (with caching)
+  - name: download
+    handler: download_source_cached
+    required: true
+    description: Download video from YouTube (check cache first)
+
+  # Step 2: Transcribe with WhisperX
+  - name: transcribe
+    handler: transcribe_whisperx
+    required: true
+    description: Transcribe audio with speaker diarization
+    skip_if: "processing.download.status != 'completed'"
+
+  # Step 3: Extract insights with auto-detection
+  - name: extract_insights
+    handler: extract_insights_auto
+    required: true
+    description: Extract insights + auto-detect ticker/company/quarter/year
+    skip_if: "processing.transcribe.status != 'completed'"
+
+  # Step 4: Validate it's an earnings call
+  - name: validate_earnings_call
+    handler: validate_earnings_call
+    required: true
+    description: Check is_earnings_call flag, skip if false
+    skip_if: "processing.extract_insights.status != 'completed'"
+
+  # Step 5: Fuzzy match company against database
+  - name: fuzzy_match_company
+    handler: fuzzy_match_company
+    required: true
+    description: Match auto-detected company against companies table
+    skip_if: "insights.is_earnings_call == false"
+
+  # Step 6: Extract audio from video (FFmpeg MP3)
+  - name: extract_audio
+    handler: extract_audio_ffmpeg
+    required: true
+    description: Extract MP3 audio from video file
+    skip_if: "processing.fuzzy_match_company.status != 'completed'"
+
+  # Step 7: Upload audio to R2
+  - name: upload_r2
+    handler: upload_media_r2
+    required: true
+    description: Upload MP3 to R2 storage
+    skip_if: "processing.extract_audio.status != 'completed'"
+
+  # Step 8: Upload artifacts (transcript.json, insights.json) to R2
+  - name: upload_artifacts
+    handler: upload_artifacts_r2
+    required: true
+    description: Upload transcript and insights JSON to R2
+    skip_if: "processing.upload_r2.status != 'completed'"
+
+  # Step 9: Update database (earnings_calls table)
+  - name: update_database
+    handler: update_database
+    required: true
+    description: Insert record into earnings_calls table with r2:// URLs
+    skip_if: "processing.upload_artifacts.status != 'completed'"

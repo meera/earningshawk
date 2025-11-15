@@ -1,0 +1,88 @@
+# Manual Audio Workflow
+# For processing manually downloaded MP3/audio files
+
+name: manual-audio
+description: Process manually downloaded earnings call audio files with LLM metadata extraction and user confirmation
+
+steps:
+  # Step 1: Copy provided audio file to job directory
+  - name: copy_audio
+    handler: copy_audio_to_job
+    required: true
+    description: Copy audio file to job input directory
+
+  # Step 2: Transcribe full audio with WhisperX
+  - name: transcribe
+    handler: transcribe_whisperx
+    required: true
+    description: Transcribe audio with speaker diarization and word-level timestamps
+
+  # Step 3: Extract metadata from transcript using LLM
+  - name: extract_metadata
+    handler: extract_metadata_llm
+    required: true
+    description: Extract ticker, company name, quarter, year from transcript
+    skip_if: "processing.transcribe.status != 'completed'"
+
+  # Step 4: Interactive confirmation - user reviews and edits metadata
+  - name: confirm_metadata
+    handler: interactive_confirm_metadata
+    required: true
+    description: Show extracted metadata to user for confirmation or editing
+    skip_if: "processing.extract_metadata.status != 'completed'"
+
+  # Step 5: Extract insights (financial metrics + highlights)
+  - name: extract_insights
+    handler: extract_insights_structured
+    required: true
+    description: Extract financial metrics and key highlights with timestamps
+    skip_if: "processing.confirm_metadata.status != 'completed'"
+
+  # Step 6: Refine timestamps to word-level precision
+  - name: refine_timestamps
+    handler: refine_timestamps
+    required: true
+    description: Refine metric/highlight timestamps to word-level precision
+    skip_if: "processing.extract_insights.status != 'completed'"
+
+  # Step 7: Upload artifacts to R2 (transcript.json, insights.json)
+  - name: upload_artifacts
+    handler: upload_artifacts_r2
+    required: false
+    description: Upload transcript and insights JSON files to R2
+    skip_if: "processing.refine_timestamps.status != 'completed'"
+
+  # Step 8: Render video (optional - can be done manually later)
+  - name: render
+    handler: remotion_render
+    required: false
+    description: Render audio-only video with Remotion (MP3 → MP4)
+    skip_if: "processing.refine_timestamps.status != 'completed'"
+
+  # Step 9: Upload rendered video to R2
+  - name: upload_r2
+    handler: upload_media_r2
+    required: false
+    description: Upload rendered video to R2 storage
+    skip_if: "processing.render.status != 'completed'"
+
+  # Step 10: Generate thumbnails from rendered video
+  - name: generate_thumbnails
+    handler: generate_thumbnails
+    required: false
+    description: Generate 4 thumbnail variations from rendered video
+    skip_if: "processing.render.status != 'completed'"
+
+  # Step 11: Upload to YouTube
+  - name: upload_youtube
+    handler: upload_youtube
+    required: false
+    description: Upload video to YouTube with metadata and chapters
+    skip_if: "processing.render.status != 'completed'"
+
+  # Step 12: Update database with earnings call record
+  - name: update_database
+    handler: update_database
+    required: false
+    description: Insert/update earnings_calls table with metadata and artifacts
+    skip_if: "processing.upload_r2.status != 'completed'"

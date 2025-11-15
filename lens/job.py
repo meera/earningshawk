@@ -128,28 +128,44 @@ class JobManager:
 def create_job(args):
     """Create new job"""
 
+    # Determine workflow (default based on input type)
+    workflow = args.workflow
+    if not workflow:
+        if args.audio:
+            workflow = 'manual-audio'
+        elif args.url:
+            workflow = 'youtube-video'
+        else:
+            workflow = 'youtube-video'  # default
+
     # Generate job ID
-    ticker = args.ticker.upper()
-    quarter = args.quarter
+    ticker = args.ticker.upper() if args.ticker else 'UNKNOWN'
+    quarter = args.quarter if args.quarter else 'Q0-0000'
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     job_id = f"{ticker}_{quarter}_{timestamp}".replace("-", "_")
 
-    # Lookup company from database
-    print(f"🔍 Looking up company: {ticker}")
-    company_data = lookup_company(ticker)
+    # Lookup company from database (if ticker provided)
+    company_data = None
+    if args.ticker:
+        print(f"🔍 Looking up company: {ticker}")
+        company_data = lookup_company(ticker)
 
-    if company_data:
-        print(f"✅ Found: {company_data['name']} ({company_data['symbol']})")
-        print(f"   Slug: {company_data['slug']}")
-        print(f"   CIK: {company_data['cik_str']}")
-        if company_data['metadata'].get('sector'):
-            print(f"   Sector: {company_data['metadata']['sector']}")
-    else:
-        print(f"⚠️  Company not found in database: {ticker}")
-        print(f"   Job will be created with limited company info")
+        if company_data:
+            print(f"✅ Found: {company_data['name']} ({company_data['symbol']})")
+            print(f"   Slug: {company_data['slug']}")
+            print(f"   CIK: {company_data['cik_str']}")
+            if company_data['metadata'].get('sector'):
+                print(f"   Sector: {company_data['metadata']['sector']}")
+        else:
+            print(f"⚠️  Company not found in database: {ticker}")
+            print(f"   Job will be created with limited company info")
 
     # Determine input type
-    if args.url:
+    if args.audio:
+        input_type = 'audio_file'
+        input_value = args.audio
+        audio_source = args.audio
+    elif args.url:
         if 'youtube.com' in args.url or 'youtu.be' in args.url:
             input_type = 'youtube_url'
         elif args.url.endswith('.m3u8') or 'm3u8' in args.url:
@@ -157,11 +173,13 @@ def create_job(args):
         else:
             input_type = 'http_url'
         input_value = args.url
+        audio_source = None
     elif args.file:
         input_type = 'local_file'
         input_value = args.file
+        audio_source = None
     else:
-        print("Error: Must provide --url or --file")
+        print("Error: Must provide --url, --file, or --audio")
         sys.exit(1)
 
     # Load template
@@ -171,11 +189,20 @@ def create_job(args):
 
     # Update job data
     job['job_id'] = job_id
+    job['workflow'] = workflow
     job['created_at'] = datetime.now().isoformat()
     job['input']['type'] = input_type
     job['input']['value'] = input_value
-    job['company']['ticker'] = ticker
-    job['company']['quarter'] = quarter
+
+    # For manual-audio workflow, store audio source path
+    if audio_source:
+        job['audio_source'] = audio_source
+
+    # Update company fields (may be populated later for manual-audio)
+    if args.ticker:
+        job['company']['ticker'] = ticker
+    if args.quarter:
+        job['company']['quarter'] = quarter
 
     # Add company data from database
     if company_data:
@@ -185,6 +212,12 @@ def create_job(args):
         job['company']['exchange'] = company_data['metadata'].get('exchange')
         job['company']['sector'] = company_data['metadata'].get('sector')
         job['company']['industry'] = company_data['metadata'].get('industry')
+        job['company_match'] = {
+            'cik_str': company_data['cik_str'],
+            'symbol': company_data['symbol'],
+            'name': company_data['name'],
+            'slug': company_data['slug']
+        }
     elif args.company:
         job['company']['name'] = args.company
 
@@ -206,10 +239,12 @@ def create_job(args):
     print(f"✓ Job created: {job_id}")
     print(f"  Directory: {job_dir}")
     print(f"  Job file: {job_file}")
+    print(f"  Workflow: {workflow}")
     print(f"  Input: {input_type}")
-    print(f"  Company: {ticker} {quarter}")
+    if args.ticker and args.quarter:
+        print(f"  Company: {ticker} {quarter}")
     print()
-    print(f"Next: python lens/job.py process {job_id}")
+    print(f"Next: python lens/workflow.py {job_file}")
 
     return job_id
 
@@ -280,38 +315,44 @@ def show_status(args):
 
 
 def process_job(args):
-    """Process job - run pipeline steps"""
+    """Process job - run workflow steps"""
     job_file = JOBS_DIR / args.job_id / "job.yaml"
 
     if not job_file.exists():
         print(f"Job not found: {args.job_id}")
         sys.exit(1)
 
-    # Import processing orchestrator
+    # Import workflow orchestrator
     sys.path.insert(0, str(LENS_DIR))
-    from process_job_pipeline import JobPipeline
+    from workflow import WorkflowOrchestrator
 
-    pipeline = JobPipeline(job_file)
+    # Create orchestrator (uses workflow from job.yaml)
+    orchestrator = WorkflowOrchestrator(job_file)
 
     if args.step:
         # Run single step
-        pipeline.run_step(args.step)
+        orchestrator.run_step(args.step)
+    elif args.from_step:
+        # Run from specific step onwards
+        orchestrator.run_from_step(args.from_step)
     else:
         # Run all steps
-        pipeline.run_all()
+        orchestrator.run_all()
 
 
 def main():
-    parser = argparse.ArgumentParser(description="MarketHawk Job Manager - Simple CLI")
+    parser = argparse.ArgumentParser(description="MarketHawk Job Manager - Workflow-based Processing")
     subparsers = parser.add_subparsers(dest='command', required=True)
 
     # Create job
     create_parser = subparsers.add_parser('create', help='Create new job')
     create_parser.add_argument('--url', help='YouTube URL or HTTP URL')
     create_parser.add_argument('--file', help='Local file path')
-    create_parser.add_argument('--ticker', required=True, help='Company ticker (e.g., PLTR)')
-    create_parser.add_argument('--quarter', required=True, help='Quarter (e.g., Q3-2025)')
+    create_parser.add_argument('--audio', help='Audio file path (for manual-audio workflow)')
+    create_parser.add_argument('--ticker', help='Company ticker (e.g., NVDA) - optional for manual-audio, auto-extracted')
+    create_parser.add_argument('--quarter', help='Quarter (e.g., Q3) - optional for manual-audio, auto-extracted')
     create_parser.add_argument('--company', help='Company name (optional)')
+    create_parser.add_argument('--workflow', help='Workflow name (manual-audio, youtube-video, audio-batch) - auto-detected if not specified')
 
     # List jobs
     list_parser = subparsers.add_parser('list', help='List all jobs')
@@ -321,9 +362,10 @@ def main():
     status_parser.add_argument('job_id', help='Job ID')
 
     # Process job
-    process_parser = subparsers.add_parser('process', help='Process job (download→transcribe→insights)')
+    process_parser = subparsers.add_parser('process', help='Process job using workflow')
     process_parser.add_argument('job_id', help='Job ID')
-    process_parser.add_argument('--step', help='Run specific step only (download, transcribe, detect_trim, insights)')
+    process_parser.add_argument('--step', help='Run specific step only')
+    process_parser.add_argument('--from-step', help='Run from specific step onwards')
 
     args = parser.parse_args()
 

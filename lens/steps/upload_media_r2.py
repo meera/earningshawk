@@ -1,0 +1,105 @@
+"""
+Upload Media to R2 - Upload audio/video file to R2 storage
+"""
+
+import subprocess
+from pathlib import Path
+from typing import Dict, Any
+from datetime import datetime
+
+
+def upload_media_r2(job_dir: Path, job_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Upload media file (audio or video) to R2 storage
+
+    Args:
+        job_dir: Job directory path
+        job_data: Job data dict
+
+    Returns:
+        Result dict with r2:// URL for media file
+    """
+    # Get job info
+    job_id = job_data.get('job_id')
+    if not job_id:
+        raise ValueError("job_data must contain 'job_id'")
+
+    # Find media file to upload
+    # Priority: rendered video > extracted audio > source file
+    media_file = None
+    media_type = None
+
+    # Check for rendered video (take1.mp4 or latest render)
+    renders_dir = job_dir / 'renders'
+    if renders_dir.exists():
+        renders = list(renders_dir.glob('*.mp4'))
+        if renders:
+            # Use take1.mp4 if exists, else latest render
+            take1 = renders_dir / 'take1.mp4'
+            media_file = take1 if take1.exists() else sorted(renders)[-1]
+            media_type = 'video'
+
+    # Check for extracted audio
+    if not media_file:
+        audio_file = job_dir / 'audio' / 'audio.mp3'
+        if audio_file.exists():
+            media_file = audio_file
+            media_type = 'audio'
+
+    # Check for source file in input/
+    if not media_file:
+        input_dir = job_dir / 'input'
+        if input_dir.exists():
+            # Look for source.* files
+            sources = list(input_dir.glob('source.*'))
+            if sources:
+                media_file = sources[0]
+                # Determine type from extension
+                ext = media_file.suffix.lower()
+                media_type = 'video' if ext in ['.mp4', '.mov', '.avi', '.mkv'] else 'audio'
+
+    if not media_file:
+        raise FileNotFoundError(
+            f"No media file found in job directory.\n"
+            f"Checked: {job_dir}/renders/*.mp4, {job_dir}/audio/audio.mp3, {job_dir}/input/source.*"
+        )
+
+    # R2 path: jobs/{JOB_ID}/media/{filename}
+    r2_path = f"jobs/{job_id}/media/{media_file.name}"
+
+    print(f"📤 Uploading {media_type} to R2: {r2_path}")
+    print(f"   Source: {media_file}")
+    print(f"   Size: {media_file.stat().st_size / (1024*1024):.1f} MB")
+
+    # Upload with rclone
+    cmd = [
+        'rclone',
+        'copyto',
+        str(media_file),
+        f"r2-markethawkeye:markeyhawkeye/{r2_path}",
+        '--s3-no-check-bucket',
+        '--progress'
+    ]
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        raise Exception(f"Media upload failed: {result.stderr}")
+
+    # Use r2:// URL format (signed URL generated on-demand)
+    media_r2_url = f"r2://markeyhawkeye/{r2_path}"
+
+    # Get file metadata
+    file_size = media_file.stat().st_size
+
+    print(f"✅ Media uploaded: {media_r2_url}")
+
+    return {
+        'media_url': media_r2_url,
+        'r2_path': r2_path,
+        'file_size_bytes': file_size,
+        'file_size_mb': round(file_size / (1024 * 1024), 2),
+        'media_type': media_type,
+        'filename': media_file.name,
+        'uploaded_at': datetime.now().isoformat()
+    }
