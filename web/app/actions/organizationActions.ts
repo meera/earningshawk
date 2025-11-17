@@ -5,29 +5,7 @@ import { authClient } from '@/lib/auth-client';
 import { headers } from 'next/headers';
 import { db } from '@/lib/db';
 import { organization as organizationTable, member as memberTable } from '@/lib/db/auth-schema';
-import { eq, and } from 'drizzle-orm';
-
-/**
- * Generate organization ID from name
- * Pattern: org_{slug}_{random4}
- * Example: org_acme_investment_a1b2
- */
-function generateOrgId(name: string): string {
-  const slug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '')
-    .replace(/\s+/g, '_')
-    .replace(/_{2,}/g, '_')
-    .replace(/^_|_$/g, '');
-
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let suffix = '';
-  for (let i = 0; i < 4; i++) {
-    suffix += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-
-  return `org_${slug}_${suffix}`;
-}
+import { eq, and, sql } from 'drizzle-orm';
 
 /**
  * Create a new organization
@@ -51,7 +29,6 @@ export async function createOrganization(name: string) {
   }
 
   try {
-    const orgId = generateOrgId(name);
     const slug = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -59,7 +36,6 @@ export async function createOrganization(name: string) {
 
     // Create organization via Better Auth
     const org = await authClient.organization.create({
-      id: orgId,
       name: name.trim(),
       slug,
       metadata: {
@@ -99,13 +75,19 @@ export async function inviteMember(
     return { error: 'Not authenticated' };
   }
 
-  // Check if user is owner or admin
-  const currentMember = await auth.api.getOrganizationMember({
-    organizationId,
-    userId: session.user.id,
-  });
+  // Check if user is owner or admin by querying the database
+  const currentMember = await db
+    .select()
+    .from(memberTable)
+    .where(
+      and(
+        eq(memberTable.organizationId, organizationId),
+        eq(memberTable.userId, session.user.id)
+      )
+    )
+    .limit(1);
 
-  if (!currentMember || !['owner', 'admin'].includes(currentMember.role)) {
+  if (!currentMember || currentMember.length === 0 || !['owner', 'admin'].includes(currentMember[0].role)) {
     return {
       error: 'Unauthorized',
       message: 'Only owners and admins can invite members',
@@ -173,16 +155,31 @@ export async function removeMember(organizationId: string, userId: string) {
     return { error: 'Not authenticated' };
   }
 
-  // Check if current user is owner or admin
-  const currentMember = await auth.api.getOrganizationMember({
-    organizationId,
-    userId: session.user.id,
-  });
+  // Check if current user is owner or admin by querying the database
+  const currentMemberResult = await db
+    .select()
+    .from(memberTable)
+    .where(
+      and(
+        eq(memberTable.organizationId, organizationId),
+        eq(memberTable.userId, session.user.id)
+      )
+    )
+    .limit(1);
 
-  const memberToRemove = await auth.api.getOrganizationMember({
-    organizationId,
-    userId,
-  });
+  const memberToRemoveResult = await db
+    .select()
+    .from(memberTable)
+    .where(
+      and(
+        eq(memberTable.organizationId, organizationId),
+        eq(memberTable.userId, userId)
+      )
+    )
+    .limit(1);
+
+  const currentMember = currentMemberResult[0];
+  const memberToRemove = memberToRemoveResult[0];
 
   if (!currentMember || !['owner', 'admin'].includes(currentMember.role)) {
     return {
@@ -199,11 +196,18 @@ export async function removeMember(organizationId: string, userId: string) {
     };
   }
 
+  if (!memberToRemove) {
+    return {
+      error: 'Member not found',
+      message: 'The specified user is not a member of this organization',
+    };
+  }
+
   try {
     // Better Auth handles billing transfer automatically via beforeRemoveMember hook
     await authClient.organization.removeMember({
       organizationId,
-      userId,
+      memberIdOrEmail: memberToRemove.id,
     });
 
     return { success: true };
@@ -233,10 +237,18 @@ export async function updateMemberRole(
   }
 
   // Only owners can update roles
-  const currentMember = await auth.api.getOrganizationMember({
-    organizationId,
-    userId: session.user.id,
-  });
+  const currentMemberResult = await db
+    .select()
+    .from(memberTable)
+    .where(
+      and(
+        eq(memberTable.organizationId, organizationId),
+        eq(memberTable.userId, session.user.id)
+      )
+    )
+    .limit(1);
+
+  const currentMember = currentMemberResult[0];
 
   if (!currentMember || currentMember.role !== 'owner') {
     return {
@@ -245,10 +257,31 @@ export async function updateMemberRole(
     };
   }
 
+  // Get the member to update
+  const memberToUpdateResult = await db
+    .select()
+    .from(memberTable)
+    .where(
+      and(
+        eq(memberTable.organizationId, organizationId),
+        eq(memberTable.userId, userId)
+      )
+    )
+    .limit(1);
+
+  const memberToUpdate = memberToUpdateResult[0];
+
+  if (!memberToUpdate) {
+    return {
+      error: 'Member not found',
+      message: 'The specified user is not a member of this organization',
+    };
+  }
+
   try {
     await authClient.organization.updateMemberRole({
       organizationId,
-      userId,
+      memberId: memberToUpdate.id,
       role: newRole,
     });
 
@@ -317,19 +350,37 @@ export async function listOrganizations() {
   }
 
   try {
-    const memberships = await db.query.member.findMany({
-      where: (member, { eq }) => eq(member.userId, session.user.id),
-      with: {
-        organization: true,
-      },
-    });
+    // Get user's memberships
+    const memberships = await db
+      .select()
+      .from(memberTable)
+      .where(eq(memberTable.userId, session.user.id));
+
+    // Get organization details for each membership
+    const organizationIds = memberships.map((m) => m.organizationId);
+    const organizations = await db
+      .select()
+      .from(organizationTable)
+      .where(
+        organizationIds.length > 0
+          ? sql`${organizationTable.id} = ANY(${organizationIds})`
+          : sql`1=0`
+      );
+
+    // Combine memberships with organization details
+    const result = memberships.map((membership) => {
+      const org = organizations.find((o) => o.id === membership.organizationId);
+      return org
+        ? {
+            ...org,
+            role: membership.role,
+          }
+        : null;
+    }).filter((o): o is NonNullable<typeof o> => o !== null);
 
     return {
       success: true,
-      organizations: memberships.map((m) => ({
-        ...m.organization,
-        role: m.role,
-      })),
+      organizations: result,
     };
   } catch (error) {
     console.error('Failed to list organizations:', error);
@@ -354,10 +405,18 @@ export async function setActiveOrganization(organizationId: string | null) {
 
   // If organizationId provided, verify user is a member
   if (organizationId) {
-    const member = await auth.api.getOrganizationMember({
-      organizationId,
-      userId: session.user.id,
-    });
+    const memberResult = await db
+      .select()
+      .from(memberTable)
+      .where(
+        and(
+          eq(memberTable.organizationId, organizationId),
+          eq(memberTable.userId, session.user.id)
+        )
+      )
+      .limit(1);
+
+    const member = memberResult[0];
 
     if (!member) {
       return {
@@ -368,8 +427,8 @@ export async function setActiveOrganization(organizationId: string | null) {
   }
 
   try {
-    await authClient.session.update({
-      activeOrganizationId: organizationId,
+    await authClient.organization.setActive({
+      organizationId: organizationId,
     });
 
     return { success: true };
@@ -395,10 +454,18 @@ export async function deleteOrganization(organizationId: string) {
   }
 
   // Only owners can delete
-  const member = await auth.api.getOrganizationMember({
-    organizationId,
-    userId: session.user.id,
-  });
+  const memberResult = await db
+    .select()
+    .from(memberTable)
+    .where(
+      and(
+        eq(memberTable.organizationId, organizationId),
+        eq(memberTable.userId, session.user.id)
+      )
+    )
+    .limit(1);
+
+  const member = memberResult[0];
 
   if (!member || member.role !== 'owner') {
     return {
@@ -408,16 +475,13 @@ export async function deleteOrganization(organizationId: string) {
   }
 
   try {
-    // Cancel subscription first if exists
-    const org = await db.query.organization.findFirst({
-      where: (org, { eq }) => eq(org.id, organizationId),
-    });
-
-    if (org?.metadata?.subscriptionTier !== 'free') {
-      await authClient.subscription.cancel({
-        referenceId: organizationId,
-      });
-    }
+    // TODO: Cancel subscription first if exists (requires Stripe integration)
+    // const org = await db.query.organization.findFirst({
+    //   where: (org, { eq }) => eq(org.id, organizationId),
+    // });
+    // if (org?.metadata?.subscriptionTier !== 'free') {
+    //   // Cancel Stripe subscription
+    // }
 
     // Delete organization (cascades to members, invitations)
     await db.delete(organizationTable).where(eq(organizationTable.id, organizationId));

@@ -84,7 +84,7 @@ export default async function EarningsCallsPage() {
                   </div>
                 </div>
 
-                {call.audioUrl && (
+                {call.mediaUrl && (
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <p className="text-sm text-green-600">Audio available</p>
                   </div>

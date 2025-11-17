@@ -44,34 +44,15 @@ export async function getUserAccess(): Promise<UserAccess> {
     };
   }
 
-  // Check personal subscription
-  // Note: In production, this would be cached in user.metadata
-  // For now, we'll check the subscription via Better Auth
-  let hasProPersonal = false;
-  try {
-    // TODO: Query Stripe via Better Auth to get subscription status
-    // For MVP, we'll use a metadata field on user table
-    const user = await db.query.user.findFirst({
-      where: (u, { eq }) => eq(u.id, session.user.id),
-    });
-    // Assuming we cache subscription tier in user metadata
-    hasProPersonal = user?.metadata?.subscriptionTier === 'pro';
-  } catch (error) {
-    console.error('Failed to get user subscription:', error);
-  }
+  // TODO: Check personal and organization subscriptions
+  // For MVP, all authenticated users have free tier
+  const hasProPersonal = false;
+  const hasTeamOrg = false;
 
-  // Check organization subscription
-  let hasTeamOrg = false;
-  if (session.activeOrganizationId) {
-    try {
-      const org = await db.query.organization.findFirst({
-        where: (org, { eq }) => eq(org.id, session.activeOrganizationId),
-      });
-      hasTeamOrg = org?.metadata?.subscriptionTier === 'team';
-    } catch (error) {
-      console.error('Failed to get organization subscription:', error);
-    }
-  }
+  // TODO: Implement subscription checking:
+  // - Query subscription table or Stripe
+  // - Cache subscription tier in organization.metadata
+  // - Check org membership and tier
 
   // User has Pro access if they have EITHER Pro personal OR Team org
   const tier: AccessTier = hasTeamOrg ? 'team' : hasProPersonal ? 'pro' : 'free';

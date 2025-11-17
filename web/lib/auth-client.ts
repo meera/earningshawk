@@ -25,6 +25,6 @@ export const {
   useActiveOrganization,
   useListOrganizations,
   organization,
-  subscription,
+  // subscription,  // TODO: Enable when Stripe plugin is fully configured
   oneTap,
 } = authClient;

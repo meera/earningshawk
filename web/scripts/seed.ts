@@ -115,12 +115,18 @@ async function seed() {
 
     for (const company of SEED_COMPANIES) {
       const id = generateCompanyId(company.ticker);
+      // Generate slug from company name (lowercase, replace spaces with hyphens)
+      const slug = company.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      // Use ticker as placeholder CIK (real CIK data should come from SEC)
+      const cikStr = `placeholder-${company.ticker.toLowerCase()}`;
 
       await db.insert(companies).values({
         id,
         ticker: company.ticker,
+        name: company.name,  // Now a dedicated column
+        slug,                 // Required field
+        cikStr,              // Required field
         data: {
-          name: company.name,
           industry: company.industry,
           sector: company.sector,
           logoUrl: company.logoUrl,

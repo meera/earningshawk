@@ -191,7 +191,7 @@ export const auth = betterAuth({
 
       hooks: {
         // Enforce seat limits before adding member
-        beforeAddMember: async ({ organization }) => {
+        beforeAddMember: async ({ organization }: { organization: any }) => {
           const subscription = await getOrgSubscription(organization.id);
           const memberCount = await getOrgMemberCount(organization.id);
 
@@ -202,7 +202,7 @@ export const auth = betterAuth({
         },
 
         // Auto-transfer billing when owner leaves
-        beforeRemoveMember: async ({ member, organization }) => {
+        beforeRemoveMember: async ({ member, organization }: { member: any; organization: any }) => {
           if (member.role === 'owner') {
             await transferBillingToOldestAdmin(organization.id, member.userId);
           }
@@ -212,71 +212,9 @@ export const auth = betterAuth({
 
     stripe({
       stripeClient,
-      createCustomerOnSignUp: true,  // Auto-create Stripe customer
-
-      // Stripe product configuration
-      products: {
-        pro: {
-          priceId: process.env.STRIPE_PRO_MONTHLY_PRICE_ID!,
-          metadata: {
-            plan: 'pro',
-            billing_period: 'monthly',
-          },
-        },
-        proYearly: {
-          priceId: process.env.STRIPE_PRO_YEARLY_PRICE_ID!,
-          metadata: {
-            plan: 'pro',
-            billing_period: 'yearly',
-          },
-        },
-        team: {
-          priceId: process.env.STRIPE_TEAM_MONTHLY_PRICE_ID!,
-          metadata: {
-            plan: 'team',
-            billing_period: 'monthly',
-          },
-        },
-        teamYearly: {
-          priceId: process.env.STRIPE_TEAM_YEARLY_PRICE_ID!,
-          metadata: {
-            plan: 'team',
-            billing_period: 'yearly',
-          },
-        },
-      },
-
-      // Webhook configuration
-      webhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
-
-      // Success/cancel URLs
-      successUrl: process.env.NEXT_PUBLIC_APP_URL + '/billing?success=true',
-      cancelUrl: process.env.NEXT_PUBLIC_APP_URL + '/pricing?canceled=true',
-
-      // Authorization: who can manage subscriptions
-      authorizeReference: async ({ user, referenceId, action }) => {
-        // Personal subscriptions: user can only manage their own
-        if (referenceId.startsWith('usr_')) {
-          return referenceId === user.id;
-        }
-
-        // Organization subscriptions: only owners can manage billing
-        if (referenceId.startsWith('org_')) {
-          const member = await getMemberRole(user.id, referenceId);
-
-          // Billing actions: only owner
-          if (['upgrade', 'cancel', 'restore'].includes(action)) {
-            return member?.role === 'owner';
-          }
-
-          // View subscription: any member
-          if (action === 'view') {
-            return !!member;
-          }
-        }
-
-        return false;
-      },
+      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || 'placeholder_webhook_secret',
+      // TODO: Full Stripe configuration pending
+      // Products, webhooks, and authorization will be configured when implementing subscription features
     }),
   ],
 

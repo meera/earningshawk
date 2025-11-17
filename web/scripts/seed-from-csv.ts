@@ -41,7 +41,13 @@ async function seedCompanies() {
   const records = parse(csvContent, {
     columns: true,
     skip_empty_lines: true,
-  });
+  }) as Array<{
+    symbol: string;
+    cik_str: string;
+    slug: string;
+    name: string;
+    metadata_json: string;
+  }>;
 
   console.log(`   Found ${records.length} companies`);
 
@@ -97,7 +103,17 @@ async function seedEarningsCalls() {
     escape: '"',
     relax_quotes: true,
     relax_column_count: true,
-  });
+  }) as Array<{
+    id: string;
+    cik_str: string;
+    symbol: string;
+    quarter: string;
+    year: string;
+    media_url: string;
+    metadata: string;
+    artifacts: string;
+    is_latest: string;
+  }>;
 
   console.log(`   Found ${records.length} earnings calls`);
 
