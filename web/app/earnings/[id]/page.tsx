@@ -42,9 +42,6 @@ export default async function EarningsCallDetailPage({
 
   const companyName = metadata.company_name || 'Unknown Company';
   const companySlug = metadata.company_slug || null;
-  const pipelineType = metadata.pipeline_type || 'unknown';
-  const batchName = metadata.batch_name || 'unknown';
-  const jobId = metadata.job_id || 'unknown';
   const processedAt = metadata.processed_at
     ? new Date(metadata.processed_at).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -126,23 +123,6 @@ export default async function EarningsCallDetailPage({
             <dt className="text-sm font-medium text-gray-500">Quarter</dt>
             <dd className="mt-1 text-sm text-gray-900">
               {call.quarter} {call.year}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Pipeline Type</dt>
-            <dd className="mt-1 text-sm text-gray-900">{pipelineType}</dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Batch</dt>
-            <dd className="mt-1 text-sm text-gray-900">{batchName}</dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Job ID</dt>
-            <dd className="mt-1 text-sm text-gray-900 font-mono text-xs">
-              {jobId}
             </dd>
           </div>
 
