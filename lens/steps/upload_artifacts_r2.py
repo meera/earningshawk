@@ -192,10 +192,10 @@ def upload_artifacts_r2(job_dir: Path, job_data: Dict[str, Any]) -> Dict[str, An
             print(f"❌ Failed to upload job.json: {result.stderr}")
             # Don't raise exception, this is optional
 
-    # Upload paragraphs.json (if exists)
-    paragraphs_file = job_dir / 'transcripts' / 'paragraphs.json'
+    # Upload transcript.paragraphs.json (if exists)
+    paragraphs_file = job_dir / 'transcripts' / 'transcript.paragraphs.json'
     if paragraphs_file.exists():
-        r2_paragraphs_path = f"{r2_base_path}/paragraphs.json"
+        r2_paragraphs_path = f"{r2_base_path}/transcript.paragraphs.json"
         print(f"📤 Uploading paragraphs to R2: {r2_paragraphs_path}")
 
         cmd = [
