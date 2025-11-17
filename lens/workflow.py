@@ -24,17 +24,19 @@ from step_registry import get_handler, list_handlers
 class WorkflowOrchestrator:
     """Execute workflow steps defined in YAML"""
 
-    def __init__(self, job_file: Path, workflow_file: Optional[Path] = None):
+    def __init__(self, job_file: Path, workflow_file: Optional[Path] = None, force: bool = False):
         """
         Initialize workflow orchestrator
 
         Args:
             job_file: Path to job.yaml
             workflow_file: Optional path to custom workflow YAML (overrides job's workflow)
+            force: Force re-run completed steps
         """
         self.job = JobManager(job_file)
         self.job_dir = job_file.parent
         self.workflow = self._load_workflow(workflow_file)
+        self.force = force
 
     def _load_workflow(self, workflow_file: Optional[Path] = None) -> Dict[str, Any]:
         """
@@ -114,8 +116,8 @@ class WorkflowOrchestrator:
         step_name = step['name']
         processing = self.job.job.get('processing', {})
 
-        # Check if step already completed
-        if step_name in processing:
+        # Check if step already completed (unless --force flag is used)
+        if not self.force and step_name in processing:
             step_status = processing[step_name].get('status')
             if step_status == 'completed':
                 return (True, f"already completed")
@@ -306,6 +308,7 @@ def main():
     )
     parser.add_argument("--step", help="Run single step only")
     parser.add_argument("--from-step", help="Run from specific step onwards")
+    parser.add_argument("--force", action="store_true", help="Force re-run completed steps")
     parser.add_argument("--list-handlers", action="store_true", help="List available step handlers")
 
     args = parser.parse_args()
@@ -326,7 +329,7 @@ def main():
         sys.exit(1)
 
     # Create orchestrator
-    orchestrator = WorkflowOrchestrator(args.job_file, args.workflow_file)
+    orchestrator = WorkflowOrchestrator(args.job_file, args.workflow_file, force=args.force)
 
     # Execute workflow
     if args.step:
