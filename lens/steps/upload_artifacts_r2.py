@@ -53,7 +53,7 @@ def upload_artifacts_r2(job_dir: Path, job_data: Dict[str, Any]) -> Dict[str, An
     # Upload transcript.json
     transcript_file = job_dir / 'transcripts' / 'transcript.json'
     if transcript_file.exists():
-        r2_transcript_path = f"{r2_base_path}/transcript.json"
+        r2_transcript_path = f"{r2_base_path}/transcripts/transcript.json"
         print(f"📤 Uploading transcript to R2: {r2_transcript_path}")
 
         cmd = [
@@ -99,7 +99,7 @@ def upload_artifacts_r2(job_dir: Path, job_data: Dict[str, Any]) -> Dict[str, An
         insights_file = job_dir / 'insights.json'
 
     if insights_file.exists():
-        r2_insights_path = f"{r2_base_path}/insights.json"
+        r2_insights_path = f"{r2_base_path}/transcripts/insights.json"
         print(f"📤 Uploading insights to R2: {r2_insights_path}")
 
         cmd = [
@@ -195,7 +195,7 @@ def upload_artifacts_r2(job_dir: Path, job_data: Dict[str, Any]) -> Dict[str, An
     # Upload transcript.paragraphs.json (if exists)
     paragraphs_file = job_dir / 'transcripts' / 'transcript.paragraphs.json'
     if paragraphs_file.exists():
-        r2_paragraphs_path = f"{r2_base_path}/transcript.paragraphs.json"
+        r2_paragraphs_path = f"{r2_base_path}/transcripts/transcript.paragraphs.json"
         print(f"📤 Uploading paragraphs to R2: {r2_paragraphs_path}")
 
         cmd = [
