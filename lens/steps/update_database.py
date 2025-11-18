@@ -138,13 +138,14 @@ SET
 
     if DEV_MODE:
         # Dev: Use local PostgreSQL
-        database_url = os.getenv('DEV_DATABASE_URL', 'postgresql://postgres:postgres@192.168.86.250:54322/markethawk')
+        database_url = os.getenv('DEV_DATABASE_URL')
+        if not database_url:
+            raise ValueError("DEV_MODE=true but DEV_DATABASE_URL environment variable not set")
     else:
         # Production: Use Neon
-        database_url = os.getenv('DATABASE_URL', 'postgresql://neondb_owner:npg_e1uBMOdh5QUy@ep-twilight-leaf-a4dgbd70.us-east-1.aws.neon.tech/neondb?sslmode=require')
-
-    if not database_url:
-        raise ValueError("DATABASE_URL environment variable not set")
+        database_url = os.getenv('DATABASE_URL')
+        if not database_url:
+            raise ValueError("DATABASE_URL environment variable not set")
 
     # Execute SQL via psql
     full_sql = update_latest_sql + insert_sql
