@@ -28,7 +28,7 @@ const plans = [
     disabled: true,
   },
   {
-    name: 'Premium',
+    name: 'Standard',
     price: '$39',
     period: 'per month',
     description: 'Unlimited access to earnings calls',
@@ -40,7 +40,7 @@ const plans = [
       'Cancel anytime',
     ],
     cta: 'Subscribe Now',
-    href: '/api/billing/checkout?plan=premium',
+    href: '/api/billing/checkout?plan=standard',
     highlighted: true,
     disabled: false,
   },

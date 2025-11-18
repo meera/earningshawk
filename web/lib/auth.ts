@@ -231,12 +231,12 @@ export const auth = betterAuth({
       subscription: {
         enabled: true,
 
-        // Get Premium price ID from existing payment link
-        // https://buy.stripe.com/9B65kCbaj0vc0CJbUu6AM00
+        // Standard subscription ($39/month)
+        // Payment link: https://buy.stripe.com/9B65kCbaj0vc0CJbUu6AM00
         plans: [
           {
-            name: 'premium',
-            priceId: process.env.STRIPE_PREMIUM_PRICE_ID || '', // Will get from Stripe dashboard
+            name: 'standard',
+            priceId: process.env.STRIPE_STANDARD_PRICE_ID || '', // Get from Stripe dashboard
           },
         ],
 
