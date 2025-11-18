@@ -37,9 +37,9 @@ except ImportError:
     create_banner = None
 
 try:
-    from steps.ffmpeg_render import ffmpeg_render
+    from steps.ffmpeg_audio_intact_with_banner import ffmpeg_audio_intact_with_banner
 except ImportError:
-    ffmpeg_render = None
+    ffmpeg_audio_intact_with_banner = None
 
 try:
     from steps.upload_youtube_step import upload_youtube_step
@@ -142,7 +142,7 @@ STEP_HANDLERS: Dict[str, Callable] = {
 
     # Rendering and thumbnails
     'create_banner': create_banner,
-    'ffmpeg_render': ffmpeg_render,
+    'ffmpeg_audio_intact_with_banner': ffmpeg_audio_intact_with_banner,
     'remotion_render': remotion_render,
     'generate_thumbnails': generate_thumbnails_step,
 

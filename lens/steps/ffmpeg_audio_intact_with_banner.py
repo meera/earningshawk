@@ -1,5 +1,5 @@
 """
-FFmpeg Render - Create video from audio + static banner image using FFmpeg
+FFmpeg Audio Intact with Banner - Extract audio from source video and overlay banner image
 """
 
 import subprocess
@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Dict, Any
 
 
-def ffmpeg_render(job_dir: Path, job_data: Dict[str, Any]) -> Dict[str, Any]:
+def ffmpeg_audio_intact_with_banner(job_dir: Path, job_data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Render video using FFmpeg (audio + static banner image)
+    Render video using FFmpeg (extract audio from source video + overlay banner image)
 
     Args:
         job_dir: Job directory path

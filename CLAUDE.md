@@ -862,3 +862,6 @@ chmod 755 /var/markethawk/jobs/{JOB_ID}/renders
 - To run with  production database use following command  'npx dotenv -e .env.production -- npm run dev'
 - no need to include "source .venv/bin/activate" while outputting commands to execute.
 - never hardcode  database urls in code
+- what is diff between upload_artifacts and upload_r2 ? \
+\
+and company database is same in prod and local - match_company is unnecessary

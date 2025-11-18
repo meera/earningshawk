@@ -61,10 +61,10 @@ steps:
     skip_if: "processing.confirm_metadata.status != 'completed'"
 
   # Step 8: Render with FFmpeg
-  - name: ffmpeg_render
-    handler: ffmpeg_render
+  - name: render
+    handler: ffmpeg_audio_intact_with_banner
     required: true
-    description: Render video with FFmpeg (audio + banner)
+    description: Render video with FFmpeg (extract audio from source + overlay banner)
     skip_if: "processing.create_banner.status != 'completed'"
 
   # Step 9: Upload media to R2
@@ -72,7 +72,7 @@ steps:
     handler: upload_media_r2
     required: true
     description: Upload rendered video to R2
-    skip_if: "processing.ffmpeg_render.status != 'completed'"
+    skip_if: "processing.render.status != 'completed'"
 
   # Step 10: Update database
   - name: update_database
