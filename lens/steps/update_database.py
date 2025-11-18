@@ -9,6 +9,11 @@ from pathlib import Path
 from typing import Dict, Any
 from datetime import datetime
 
+# Load environment variables (auto-loads .env or .env.production based on DEV_MODE)
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from env_loader import get_database_url
+
 
 def update_database(job_dir: Path, job_data: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -133,19 +138,8 @@ SET
     updated_at = NOW();
 """
 
-    # Get database URL based on environment (dev vs prod)
-    DEV_MODE = os.getenv('DEV_MODE', 'false').lower() == 'true'
-
-    if DEV_MODE:
-        # Dev: Use local PostgreSQL
-        database_url = os.getenv('DEV_DATABASE_URL')
-        if not database_url:
-            raise ValueError("DEV_MODE=true but DEV_DATABASE_URL environment variable not set")
-    else:
-        # Production: Use Neon
-        database_url = os.getenv('DATABASE_URL')
-        if not database_url:
-            raise ValueError("DATABASE_URL environment variable not set")
+    # Get database URL from environment
+    database_url = get_database_url()
 
     # Execute SQL via psql
     full_sql = update_latest_sql + insert_sql

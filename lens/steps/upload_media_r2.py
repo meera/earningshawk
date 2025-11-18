@@ -8,9 +8,13 @@ from pathlib import Path
 from typing import Dict, Any
 from datetime import datetime
 
-# Get R2 bucket based on environment (dev vs prod)
-DEV_MODE = os.getenv('DEV_MODE', 'false').lower() == 'true'
-R2_BUCKET = 'dev-markethawkeye' if DEV_MODE else 'markeyhawkeye'
+# Load environment variables (auto-loads .env or .env.production based on DEV_MODE)
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from env_loader import get_r2_bucket_name
+
+# Get R2 bucket from environment
+R2_BUCKET = get_r2_bucket_name()
 
 
 def upload_media_r2(job_dir: Path, job_data: Dict[str, Any]) -> Dict[str, Any]:
