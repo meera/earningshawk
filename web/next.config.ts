@@ -8,6 +8,23 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
 
+  // Redirect www → non-www to fix CORS issues with Better Auth
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.markethawkeye.com',
+          },
+        ],
+        destination: 'https://markethawkeye.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
+
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals = config.externals || [];
