@@ -110,11 +110,20 @@ async function transferBillingToOldestAdmin(orgId: string, leavingOwnerId: strin
 // ============================================
 
 export const auth = betterAuth({
+  // Use X-Forwarded-Host header to support both www and non-www domains
   baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  basePath: '/api/auth',
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema,
   }),
+  advanced: {
+    useSecureCookies: process.env.NODE_ENV === 'production',
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: '.markethawkeye.com', // Works for both www and non-www
+    },
+  },
   logger: {
     verboseLogging: true,
     disabled: false,
