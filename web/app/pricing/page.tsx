@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import posthog from 'posthog-js';
+import { Footer } from '@/components/Footer';
 
 export default function PricingPage() {
   const handleUpgradeClick = (planName: string, planPrice: string) => {
@@ -188,6 +189,8 @@ export default function PricingPage() {
           </p>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

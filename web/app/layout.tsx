@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ClientLayout } from "@/components/ClientLayout";
 
 // Inter is used as a Satoshi alternative (geometric, modern, highly readable)
 // Matches brand guidelines: precision, intelligence, premium analytics
@@ -35,7 +36,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        {children}
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

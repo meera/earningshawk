@@ -181,10 +181,10 @@ export default async function EarningsCallPage({
       {/* Header */}
       <div className="mb-8">
         <Link
-          href="/earnings"
+          href={`/companies/${company}`}
           className="text-blue-600 hover:underline mb-4 inline-block"
         >
-          ← Back to all earnings calls
+          ← Back to {companyName}
         </Link>
         <h1 className="text-4xl font-bold mb-2">{companyName}</h1>
         <div className="flex flex-wrap gap-4 text-gray-600">

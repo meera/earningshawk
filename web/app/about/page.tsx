@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
+import { Footer } from '@/components/Footer';
 
 export default function HomePage() {
   const [email, setEmail] = useState('');
@@ -233,34 +234,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border mt-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-3">
-              <div className="relative w-8 h-8 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">M</span>
-                <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-accent rounded-full shadow-sm shadow-accent/50"></span>
-              </div>
-              <span className="text-text-tertiary text-sm">
-                © 2024 Markey HawkEye. Transform earnings calls into visual insights.
-              </span>
-            </div>
-
-            <div className="flex items-center space-x-6 text-sm">
-              <Link href="mailto:thehawkeyemarket@gmail.com" className="text-text-tertiary hover:text-accent transition-colors">
-                Contact
-              </Link>
-              <Link href="/privacy" className="text-text-tertiary hover:text-accent transition-colors">
-                Privacy
-              </Link>
-              <Link href="/terms" className="text-text-tertiary hover:text-accent transition-colors">
-                Terms
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
