@@ -1,13 +1,13 @@
 import { getEarningsCallBySlug } from '../../actions';
 import { getSignedUrlForR2Media } from '@/lib/r2';
 import { getTranscriptFromR2 } from '../../components/transcript-actions';
-import { TranscriptViewer } from '../../components/TranscriptViewer';
+import { EarningsCallViewer } from './EarningsCallViewer';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-
-export const metadata = {
-  title: 'Earnings Call | MarketHawk',
-};
+import type { Metadata } from 'next';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 // Helper to parse quarter-year slug (e.g., "q3-2025" -> { quarter: "Q3", year: 2025 })
 function parseQuarterYear(slug: string): { quarter: string; year: number } | null {
@@ -16,6 +16,56 @@ function parseQuarterYear(slug: string): { quarter: string; year: number } | nul
   return {
     quarter: `Q${match[1]}`,
     year: parseInt(match[2], 10),
+  };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ company: string; 'quarter-year': string }>;
+}): Promise<Metadata> {
+  const { company, 'quarter-year': quarterYear } = await params;
+
+  const parsed = parseQuarterYear(quarterYear);
+  if (!parsed) {
+    return {
+      title: 'Earnings Call Not Found | MarketHawk',
+    };
+  }
+
+  const { quarter, year } = parsed;
+  const result = await getEarningsCallBySlug(company, quarter, year);
+
+  if (!result.success || !result.data) {
+    return {
+      title: 'Earnings Call Not Found | MarketHawk',
+    };
+  }
+
+  const call = result.data;
+  const insights = call.insights || {};
+  const companyName = call.companyName || insights.company_name || call.symbol;
+  const canonicalUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://markethawkeye.com'}/earnings/${company}/${quarterYear}`;
+
+  return {
+    title: `${companyName} ${quarter} ${year} Earnings Call | MarketHawk`,
+    description: insights.summary
+      ? insights.summary.slice(0, 155) + '...'
+      : `Listen to ${companyName}'s ${quarter} ${year} earnings call with AI-generated insights, transcript, and financial metrics.`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: `${companyName} ${quarter} ${year} Earnings Call`,
+      description: insights.summary?.slice(0, 155) || `AI-powered earnings call analysis for ${companyName}`,
+      url: canonicalUrl,
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${companyName} ${quarter} ${year} Earnings Call`,
+      description: insights.summary?.slice(0, 155) || `AI-powered earnings call analysis for ${companyName}`,
+    },
   };
 }
 
@@ -46,6 +96,32 @@ export default async function EarningsCallPage({
   const transcripts = call.transcripts || {};
   const insights = call.insights || {};
 
+  // Debug: Log mediaUrl
+  console.log('[DEBUG] call.mediaUrl:', call.mediaUrl);
+  console.log('[DEBUG] call.youtubeId:', call.youtubeId);
+
+  // Track earnings call page view with PostHog
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  const posthog = getPostHogClient();
+  const distinctId = session?.user?.email || session?.user?.id || 'anonymous';
+
+  posthog.capture({
+    distinctId,
+    event: 'earnings_call_viewed',
+    properties: {
+      company_name: call.companyName || insights.company_name,
+      symbol: call.symbol,
+      quarter: call.quarter,
+      year: call.year,
+      management_tone: insights.sentiment?.management_tone,
+      has_video: !!call.mediaUrl,
+      is_authenticated: !!session?.user,
+    },
+  });
+  await posthog.shutdown();
+
   // Fetch transcript paragraphs from R2
   let transcriptData = null;
   let speakers = [];
@@ -68,15 +144,20 @@ export default async function EarningsCallPage({
   let mediaSignedUrl: string | null = null;
   let r2Key: string | null = null;
 
+  console.log('[DEBUG] Processing mediaUrl for R2...');
   if (call.mediaUrl && call.mediaUrl.startsWith('r2://')) {
     const urlParts = call.mediaUrl.replace('r2://', '').split('/');
     r2Key = urlParts.slice(1).join('/');
+    console.log('[DEBUG] Extracted r2Key:', r2Key);
 
     try {
       mediaSignedUrl = await getSignedUrlForR2Media(r2Key);
+      console.log('[DEBUG] Generated signed URL:', mediaSignedUrl ? 'YES' : 'NO');
     } catch (error) {
-      console.error('Failed to get signed URL:', error);
+      console.error('[DEBUG] Failed to get signed URL:', error);
     }
+  } else {
+    console.log('[DEBUG] mediaUrl does not start with r2://, value:', call.mediaUrl);
   }
 
   const companyName = call.companyName || insights.company_name || metadata.company_name || 'Unknown Company';
@@ -116,12 +197,12 @@ export default async function EarningsCallPage({
       {/* Summary & Sentiment */}
       {(summary || sentiment.management_tone) && (
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Executive Summary</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-gray-900">Executive Summary</h2>
 
           {/* Sentiment */}
           {sentiment.management_tone && (
             <div className="mb-4 flex items-center gap-4">
-              <span className="text-sm font-medium text-gray-700">Management Tone:</span>
+              <span className="text-sm font-medium text-gray-800">Management Tone:</span>
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                 sentiment.management_tone === 'bullish'
                   ? 'bg-green-100 text-green-800'
@@ -134,7 +215,7 @@ export default async function EarningsCallPage({
 
               {sentiment.confidence_level && (
                 <>
-                  <span className="text-sm font-medium text-gray-700">Confidence:</span>
+                  <span className="text-sm font-medium text-gray-800">Confidence:</span>
                   <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                     {sentiment.confidence_level.charAt(0).toUpperCase() + sentiment.confidence_level.slice(1)}
                   </span>
@@ -150,10 +231,10 @@ export default async function EarningsCallPage({
           {/* Key Themes */}
           {sentiment.key_themes && sentiment.key_themes.length > 0 && (
             <div className="mt-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Key Themes:</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">Key Themes:</h3>
               <div className="flex flex-wrap gap-2">
                 {sentiment.key_themes.map((theme: string, index: number) => (
-                  <span key={index} className="px-3 py-1 bg-white border border-blue-200 rounded-full text-sm text-gray-700">
+                  <span key={index} className="px-3 py-1 bg-white border border-blue-200 rounded-full text-sm text-gray-800">
                     {theme}
                   </span>
                 ))}
@@ -166,20 +247,12 @@ export default async function EarningsCallPage({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content - 2 columns */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Video/Audio Player */}
-          {mediaSignedUrl && (
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Recording</h2>
-              <video
-                controls
-                className="w-full rounded"
-                preload="metadata"
-                src={mediaSignedUrl}
-              >
-                Your browser does not support the video element.
-              </video>
-            </div>
-          )}
+          {/* Media Player + Transcript */}
+          <EarningsCallViewer
+            mediaUrl={mediaSignedUrl}
+            transcript={transcriptData}
+            speakers={speakers}
+          />
 
           {/* Highlights */}
           {highlights.length > 0 && (
@@ -204,14 +277,6 @@ export default async function EarningsCallPage({
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Transcript */}
-          {transcriptData && (
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Full Transcript</h2>
-              <TranscriptViewer transcript={transcriptData} speakers={speakers} />
             </div>
           )}
         </div>
