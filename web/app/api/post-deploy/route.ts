@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 
 /**
  * Post-deployment webhook to notify search engines of sitemap updates
- * Called by Vercel after successful deployment
+ * Pings Google & Bing when new earnings calls are deployed
  */
 export async function POST(request: Request) {
-  // Verify this is from Vercel (check secret token)
+  // Verify authorization with secret token
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.DEPLOY_HOOK_SECRET}`) {
+  if (authHeader !== `Bearer ${process.env.SEO_SITEMAP_WEBHOOK_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -48,6 +48,6 @@ export async function GET() {
   return NextResponse.json({
     message: 'Use POST method with Authorization header',
     sitemap: sitemapUrl,
-    example: `curl -X POST ${baseUrl}/api/post-deploy -H "Authorization: Bearer YOUR_SECRET"`,
+    example: `curl -X POST ${baseUrl}/api/post-deploy -H "Authorization: Bearer SEO_SITEMAP_WEBHOOK_SECRET"`,
   });
 }
