@@ -26,13 +26,13 @@ class FinancialMetric(BaseModel):
     metric: str = Field(description="Metric name (e.g., Revenue, EPS, Operating Income)")
     value: str = Field(description="Value mentioned (e.g., $94.9B, $1.64)")
     change: Optional[str] = Field(default=None, description="Change vs prior period (e.g., +6% YoY, -3% QoQ)")
-    timestamp: int = Field(description="Timestamp in seconds when mentioned")
+    timestamp: int = Field(description="Timestamp in total seconds from beginning when this metric was mentioned. Calculate as: (minutes × 60) + seconds")
     context: str = Field(description="Brief context around the metric")
 
 
 class Highlight(BaseModel):
     """Key highlight or insight"""
-    timestamp: int = Field(description="Timestamp in seconds")
+    timestamp: int = Field(description="Timestamp in total seconds from beginning. Calculate as: (minutes × 60) + seconds")
     text: str = Field(description="Highlight text (concise, <280 chars)")
     category: Literal["financial", "product", "guidance", "strategy", "qa"] = Field(
         description="Category of highlight"
@@ -42,7 +42,7 @@ class Highlight(BaseModel):
 
 class Chapter(BaseModel):
     """Video chapter marker"""
-    timestamp: int = Field(description="Start time in seconds")
+    timestamp: int = Field(description="Start time in total seconds from beginning. For example, 29 minutes 10 seconds should be 1750 (not 2910). Calculate as: (minutes × 60) + seconds")
     title: str = Field(description="Chapter title")
 
 
@@ -89,7 +89,7 @@ class StrategicInitiative(BaseModel):
         description="Type of initiative"
     )
     description: str = Field(description="Brief description")
-    timestamp: int = Field(description="When mentioned (seconds)")
+    timestamp: int = Field(description="Timestamp in total seconds from beginning when this was mentioned. Calculate as: (minutes × 60) + seconds")
 
 
 class GuidanceMetric(BaseModel):
@@ -118,7 +118,7 @@ class AnalystConcern(BaseModel):
     topic: str = Field(description="Topic/concern")
     analyst_firm: Optional[str] = Field(default=None, description="Analyst's firm if mentioned")
     management_response_summary: str = Field(description="Summary of management's response")
-    timestamp: int = Field(description="When asked (seconds)")
+    timestamp: int = Field(description="Timestamp in total seconds from beginning when this question was asked. Calculate as: (minutes × 60) + seconds")
 
 
 class SentimentAnalysis(BaseModel):
@@ -236,19 +236,21 @@ FINANCIAL METRICS:
 - Include exact values and % changes vs prior period
 - Note timestamp when mentioned
 
-HIGHLIGHTS:
-- 5-10 most important moments from the call
-- Financial results, guidance changes, product announcements, strategic shifts
-- Include speaker attribution and timestamps
+HIGHLIGHTS (Optimized for YouTube Shorts 15-17 seconds):
+- Extract 5-10 most impactful moments that work as standalone YouTube shorts
+- Each highlight MUST be a COMPLETE SENTENCE or thought (not fragments)
+- Target duration: 15-17 seconds when spoken (roughly 25-35 words)
+- Prioritize: Major announcements (acquisitions, partnerships), surprising results (missed expectations, unusual factors),
+  customer satisfaction metrics with specific numbers (e.g., "400 basis point increase"), market share claims,
+  strategic pivots, meaningful guidance changes
+- AVOID: Generic statements like "earnings call commenced", routine financial recaps, boilerplate language
+- Include exact speaker attribution and precise timestamps
+- Each highlight should contain newsworthy, shareable content that stands alone
 
 CHAPTERS:
-- Create clear chapter markers:
-  - Opening Remarks (usually ~0:00)
-  - Financial Results (usually after intro)
-  - Business Update / Product News
-  - Guidance / Outlook
-  - Q&A Session
-- Use actual timestamps from transcript
+- Create clear chapter markers for major sections:
+  - Opening Remarks, Financial Results, Business Update, Guidance, Q&A Session
+- Use actual timestamps from transcript segments
 
 ENTITY EXTRACTION (Extract as much structured data as possible):
 - Companies Mentioned: Competitors, partners, customers, acquisition targets with relationship context
@@ -376,19 +378,21 @@ FINANCIAL METRICS:
 - Include exact values and % changes vs prior period
 - Note timestamp when mentioned
 
-HIGHLIGHTS:
-- 5-10 most important moments from the call
-- Financial results, guidance changes, product announcements, strategic shifts
-- Include speaker attribution and timestamps
+HIGHLIGHTS (Optimized for YouTube Shorts 15-17 seconds):
+- Extract 5-10 most impactful moments that work as standalone YouTube shorts
+- Each highlight MUST be a COMPLETE SENTENCE or thought (not fragments)
+- Target duration: 15-17 seconds when spoken (roughly 25-35 words)
+- Prioritize: Major announcements (acquisitions, partnerships), surprising results (missed expectations, unusual factors),
+  customer satisfaction metrics with specific numbers (e.g., "400 basis point increase"), market share claims,
+  strategic pivots, meaningful guidance changes
+- AVOID: Generic statements like "earnings call commenced", routine financial recaps, boilerplate language
+- Include exact speaker attribution and precise timestamps
+- Each highlight should contain newsworthy, shareable content that stands alone
 
 CHAPTERS:
-- Create clear chapter markers:
-  - Opening Remarks (usually ~0:00)
-  - Financial Results (usually after intro)
-  - Business Update / Product News
-  - Guidance / Outlook
-  - Q&A Session
-- Use actual timestamps from transcript
+- Create clear chapter markers for major sections:
+  - Opening Remarks, Financial Results, Business Update, Guidance, Q&A Session
+- Use actual timestamps from transcript segments
 
 ENTITY EXTRACTION (Extract as much structured data as possible):
 - Companies Mentioned: Competitors, partners, customers, acquisition targets with relationship context

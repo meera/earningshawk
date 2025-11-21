@@ -1,7 +1,7 @@
 import {Config} from '@remotion/cli/config';
 
-// Studio port configuration
-Config.setStudioPort(8082);
+// Studio port configuration (auto-select free port)
+// Config.setStudioPort(8082);  // Commented out - let Remotion auto-select
 
 Config.setVideoImageFormat('jpeg');
 Config.setOverwriteOutput(true);

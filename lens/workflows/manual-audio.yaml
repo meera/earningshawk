@@ -17,11 +17,11 @@ steps:
     required: true
     description: Transcribe audio with speaker diarization and word-level timestamps
 
-  # Step 3: Extract metadata from transcript using LLM
-  - name: extract_metadata
-    handler: extract_metadata_llm
+  # Step 3: Extract metadata + insights in ONE LLM call (auto-detection)
+  - name: extract_insights
+    handler: extract_insights_structured
     required: true
-    description: Extract ticker, company name, quarter, year from transcript
+    description: Extract metadata (company, ticker, quarter, year) + insights (metrics, highlights, chapters) in single LLM call
     skip_if: "processing.transcribe.status != 'completed'"
 
   # Step 4: Interactive confirmation - user reviews and edits metadata
@@ -29,13 +29,13 @@ steps:
     handler: interactive_confirm_metadata
     required: true
     description: Show extracted metadata to user for confirmation or editing
-    skip_if: "processing.extract_metadata.status != 'completed'"
+    skip_if: "processing.extract_insights.status != 'completed'"
 
-  # Step 5: Extract insights (financial metrics + highlights)
-  - name: extract_insights
-    handler: extract_insights_structured
-    required: true
-    description: Extract financial metrics and key highlights with timestamps
+  # Step 5: Match company against database (get slug, sector, exchange, etc.)
+  - name: match_company
+    handler: match_company
+    required: false
+    description: Match company ticker/name against database to get slug and enriched metadata
     skip_if: "processing.confirm_metadata.status != 'completed'"
 
   # Step 6: Refine timestamps to word-level precision
@@ -43,7 +43,7 @@ steps:
     handler: refine_timestamps
     required: true
     description: Refine metric/highlight timestamps to word-level precision
-    skip_if: "processing.extract_insights.status != 'completed'"
+    skip_if: "processing.confirm_metadata.status != 'completed'"
 
   # Step 7: Upload artifacts to R2 (transcript.json, insights.json)
   - name: upload_artifacts
@@ -61,7 +61,7 @@ steps:
 
   # Step 9: Render video with FFmpeg (audio + banner)
   - name: ffmpeg_render
-    handler: ffmpeg_render
+    handler: ffmpeg_audio_with_banner
     required: true
     description: Render video using FFmpeg (combine banner + audio)
     skip_if: "processing.create_banner.status != 'completed'"
@@ -80,7 +80,7 @@ steps:
     description: Upload video to YouTube with metadata and chapters
     skip_if: "processing.ffmpeg_render.status != 'completed'"
 
-  # Step 13: Update database with earnings call record
+  # Step 12: Update database with earnings call record
   - name: update_database
     handler: update_database
     required: false

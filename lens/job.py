@@ -147,10 +147,29 @@ def create_job(args):
         print("  audio-batch     - For batch processing multiple videos")
         sys.exit(1)
 
-    # Generate job ID: job_<workflow>_<4-char-random>
-    # Example: job_manual-audio_4egw
+    # Generate job ID with source path context
+    # For audio files: job_<workflow>_<company>_<quarter>_<random>
+    # Example: job_manual-audio_nvidia_2025-q3_4egw
     random_id = generate_random_id(4)
-    job_id = f"job_{workflow}_{random_id}"
+
+    # Extract company/quarter from audio file path if available
+    path_parts = []
+    if args.audio:
+        audio_path = Path(args.audio)
+        # Get parent directory names (e.g., /manual_download/nvidia/2025-q3/source.mp4)
+        # Extract: nvidia, 2025-q3
+        parent_parts = audio_path.parts
+        if 'manual_download' in parent_parts:
+            idx = parent_parts.index('manual_download')
+            # Get the next 2 parts after manual_download (company, quarter)
+            if idx + 2 < len(parent_parts):
+                path_parts = [parent_parts[idx + 1], parent_parts[idx + 2]]
+
+    # Build job ID
+    if path_parts:
+        job_id = f"job_{workflow}_{'_'.join(path_parts)}_{random_id}"
+    else:
+        job_id = f"job_{workflow}_{random_id}"
 
     # Lookup company from database (if ticker provided)
     company_data = None
@@ -244,15 +263,19 @@ def create_job(args):
     with open(job_file, 'w') as f:
         yaml.dump(job, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
-    print(f"✓ Job created: {job_id}")
+    print()
+    print("=" * 60)
+    print("✅ Job created successfully!")
+    print("=" * 60)
+    print(f"  Job ID: {job_id}")
     print(f"  Directory: {job_dir}")
-    print(f"  Job file: {job_file}")
     print(f"  Workflow: {workflow}")
     print(f"  Input: {input_type}")
     if args.ticker and args.quarter:
         print(f"  Company: {args.ticker.upper()} {args.quarter}")
     print()
-    print(f"Next: python lens/workflow.py {job_file}")
+    print("Next step:")
+    print(f"  python lens/workflow.py {job_file}")
 
     return job_id
 

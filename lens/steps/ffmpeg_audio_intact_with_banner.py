@@ -63,6 +63,7 @@ def ffmpeg_audio_intact_with_banner(job_dir: Path, job_data: Dict[str, Any]) -> 
         '-map', '0:v:0',                 # Map video from first input (banner)
         '-map', '1:a:0',                 # Map audio from second input (source video)
         '-shortest',                     # End when shortest stream ends
+        '-movflags', '+faststart',       # Enable progressive streaming (moov atom at start)
         '-y',                            # Overwrite output file
         str(output_video)
     ]

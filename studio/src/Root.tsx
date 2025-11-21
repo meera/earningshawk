@@ -21,13 +21,15 @@ import {
 import { SubscribeExample as SubscribeLowerThirdExample } from './compositions/Examples/SubscribeExample';
 import { ThemeExample } from './compositions/ThemeExample';
 import { EnhancementsDemo } from './compositions/EnhancementsDemo';
+import { EarningsShort } from './compositions/EarningsShort';
 
 /**
  * Root composition with three sections:
  *
  * 1. Production Videos - Actual earnings call videos
- * 2. Animated Components - Individual component examples
- * 3. Component Library - Reusable components for building videos
+ * 2. YouTube Shorts - Vertical short-form videos (9:16)
+ * 3. Animated Components - Individual component examples
+ * 4. Component Library - Reusable components for building videos
  */
 export const RemotionRoot: React.FC = () => {
 	return (
@@ -87,6 +89,39 @@ export const RemotionRoot: React.FC = () => {
 						height={1080}
 					/>
 				</Folder>
+			</Folder>
+
+			<Folder name="YouTube-Shorts">
+				<Composition
+					id="EarningsShort"
+					component={EarningsShort}
+					durationInFrames={900} // 30 seconds at 30fps (adjust per short)
+					fps={30}
+					width={1080}  // 9:16 vertical format
+					height={1920}
+					defaultProps={{
+						highlight: {
+							text: "Revenue grew 24% driven by strong demand",
+							speaker: "CEO",
+							timestamp: 180,
+							duration: 30,
+							category: 'financial' as const,
+						},
+						audioUrl: 'http://192.168.1.101:8080/sample_audio.mp3',
+						speakerPhotoUrl: 'http://192.168.1.101:8080/sample_photo.jpg',
+						words: [
+							{ word: 'Revenue', start: 0, end: 0.5 },
+							{ word: 'grew', start: 0.6, end: 0.9 },
+							{ word: '24%', start: 1.0, end: 1.4 },
+							{ word: 'driven', start: 1.5, end: 1.9 },
+							{ word: 'by', start: 2.0, end: 2.2 },
+							{ word: 'strong', start: 2.3, end: 2.7 },
+							{ word: 'demand', start: 2.8, end: 3.3 },
+						],
+						companyName: 'Sample Company',
+						ticker: 'SMPL',
+					}}
+				/>
 			</Folder>
 
 			<Folder name="Animated-Components">

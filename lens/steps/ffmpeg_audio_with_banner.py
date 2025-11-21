@@ -21,15 +21,21 @@ def ffmpeg_audio_with_banner(job_dir: Path, job_data: Dict[str, Any]) -> Dict[st
         Result dict with render info
     """
 
-    # Find input audio file
-    input_audio = job_dir / "input" / "source.mp3"
-    if not input_audio.exists():
-        # Try other audio extensions
+    # Get input audio file from copy_audio step result
+    copy_audio_result = job_data.get('processing', {}).get('copy_audio', {})
+    audio_destination = copy_audio_result.get('destination')
+
+    if audio_destination:
+        input_audio = Path(audio_destination)
+    else:
+        # Fallback: find any source.* file in input directory
         audio_files = list((job_dir / "input").glob("source.*"))
-        audio_files = [f for f in audio_files if f.suffix.lower() in ['.mp3', '.m4a', '.wav', '.aac', '.flac']]
         if not audio_files:
             raise FileNotFoundError(f"No audio file found in {job_dir / 'input'}")
         input_audio = audio_files[0]
+
+    if not input_audio.exists():
+        raise FileNotFoundError(f"Audio file not found: {input_audio}")
 
     # Find banner image
     banner_path = job_dir / "renders" / "banner.png"
@@ -65,6 +71,7 @@ def ffmpeg_audio_with_banner(job_dir: Path, job_data: Dict[str, Any]) -> Dict[st
         '-b:a', '192k',                  # Audio bitrate
         '-pix_fmt', 'yuv420p',           # Pixel format for compatibility
         '-shortest',                     # End when audio ends
+        '-movflags', '+faststart',       # Enable progressive streaming (moov atom at start)
         '-y',                            # Overwrite output file
         str(output_video)
     ]
